@@ -3,9 +3,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <iostream>
+#include <vector.h>
 #include "common.h"
 
-//socket libraries:
+// socket libraries:
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -14,43 +15,49 @@
 
 #define BUFSZ 500
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	char string[14];
 	strcpy(string, argv[1]);
-	char * ip = strtok (string, ":");	//gets IP
-	char * port = strtok (NULL, ":"); //gets port
+	char *ip = strtok(string, ":"); // gets IP
+	char *port = strtok(NULL, ":"); // gets port
 
-	if( argv[2] < 0){
-		std::cout <<" missing exhibitor's ID" << std::endl;
+	if (argv[2] < 0)
+	{
+		std::cout << " missing exhibitor's ID" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
 	unsigned short exhibitorID = atoi(argv[2]);
+	char planetName[8] = randomPalanetName();
 
 	// socket parse:
 	struct sockaddr_storage storage;
-	
-	if (0 != addrparse(ip, port, &storage)) {
+
+	if (0 != addrparse(ip, port, &storage))
+	{
 		printf("error\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	int s;
-	s = socket(storage.ss_family, SOCK_STREAM, 0);
-	if (s == -1) {
+
+	int sock;
+	sock = socket(storage.ss_family, SOCK_STREAM, 0);
+	if (sock == -1)
+	{
 		logexit("socket");
 	}
 	struct sockaddr *addr = (struct sockaddr *)(&storage);
-	if (0 != connect(s, addr, sizeof(storage))) {
+	if (0 != connect(sock, addr, sizeof(storage)))
+	{
 		logexit("connect");
 	}
 
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
 
-	printf("connected to %s\n", addrstr); //connection success
+	printf("connected to %s\n", addrstr); // connection success
 
-	//communication variables:
+	// communication variables:
 	size_t count;
 	struct header issuerHeader;
 
@@ -58,94 +65,123 @@ int main(int argc, char **argv) {
 	unsigned short issuerID = 1;
 
 	issuerHeader.msgOrder = 0;
-	issuerHeader.msgOrigin = issuerID; 
-	issuerHeader.msgDestiny = exhibitorID; 
-	
+	issuerHeader.msgOrigin = issuerID;
+	issuerHeader.msgDestiny = exhibitorID;
 
-	if( issuerHeader.msgOrder == 0){
-		//sends an "OI" message type (3)
-		issuerHeader.msgType = 3; 
-		count = send(s, &issuerHeader, sizeof(header), 0);
-		
-		if (count != sizeof(header)) {
-			logexit("send");  //in case of error
+	if (issuerHeader.msgOrder == 0)
+	{
+		// sends an "OI" message type (3)
+		issuerHeader.msgType = 3;
+		count = send(sock, &issuerHeader, sizeof(header), 0);
+
+		if (count != sizeof(header))
+		{
+			logexit("send"); // in case of error
 		}
 
-		count = recv(s, &issuerHeader, sizeof(header),0); 
+		count = recv(sock, &issuerHeader, sizeof(header), 0);
 
-		issuerID = issuerHeader.msgDestiny; //this issuer ID
-
-		
+		issuerID = issuerHeader.msgDestiny; // this issuer ID
 	}
-	
-	if( issuerHeader.msgType == 1){
+
+	if (issuerHeader.msgType == 1)
+	{
 		std::cout << "\nissuer connected - ID:" << issuerID << std::endl;
-		//connection accepted
-		while(1){
+		// inform to server the origin planet
+		memset(buf, 0, BUFSZ);
+		sprintf(buf, "origin %d %s", strlen(planetName), planetName);
+		count = send(sock, buf, strlen(buf), 0);
 
-				issuerHeader.msgOrder++;
-				issuerHeader.msgOrigin = issuerID;
-				issuerHeader.msgType = getsType();
+		// connection accepted
+		while (1)
+		{
 
-				if(issuerHeader.msgType == 4){
-					issuerHeader.msgDestiny = exhibitorID;
-					count = send(s,&issuerHeader, sizeof(header),0);
-					close(s);
-					std::cout << "\n connection terminated" << std::endl;
-					exit(EXIT_SUCCESS);
-				} else {
-															
-					issuerHeader.msgDestiny = getsDestiny(exhibitorID);
+			issuerHeader.msgOrder++;
+			issuerHeader.msgOrigin = issuerID;
+			issuerHeader.msgType = getsType();
 
-					switch (issuerHeader.msgType)
+			if (issuerHeader.msgType == 4)
+			{
+				issuerHeader.msgDestiny = exhibitorID;
+				count = send(sock, &issuerHeader, sizeof(header), 0);
+				close(sock);
+				std::cout << "\n connection terminated" << std::endl;
+				exit(EXIT_SUCCESS);
+			}
+			else
+			{
+
+				issuerHeader.msgDestiny = getsDestiny(exhibitorID);
+
+				switch (issuerHeader.msgType)
+				{
+				case 5:
+				{
+					count = send(sock, &issuerHeader, sizeof(header), 0);
+
+					std::cout << "\n> send message to " << issuerHeader.msgDestiny << ": " << std::endl;
+					memset(buf, 0, BUFSZ);
+					std::cin.ignore();
+					std::cin.getline(buf, BUFSZ);
+
+					unsigned short size = strlen(buf);
+					count = send(sock, &size, sizeof(size), 0); // sends message's size first
+					count = send(sock, buf, size, 0);						// sends message
+
+					count = recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+
+					if (issuerHeader.msgType == 1)
 					{
-					case 5:{
-						count = send(s, &issuerHeader, sizeof(header),0);
-												
-						std::cout <<"\n> send message to " << issuerHeader.msgDestiny << ": " << std::endl;
-						memset(buf, 0, BUFSZ); 
-						std::cin.ignore();
-						std::cin.getline(buf,BUFSZ);					
-
-						unsigned short size = strlen(buf);
-						count = send(s, &size,sizeof(size),0); //sends message's size first
-						count = send(s, buf, size, 0); //sends message
-												
-						count = recv(s, &issuerHeader, sizeof(header),0); //receives an "OK" message
-						
-						if( issuerHeader.msgType == 1){
-							std::cout << "\n message delivered!" << std::endl;
-						}
-
-						issuerHeader.msgOrder++;
+						std::cout << "\n message delivered!" << std::endl;
 					}
-						break;
-					case 6:
-						count = send(s, &issuerHeader, sizeof(header),0);
 
-						recv(s, &issuerHeader, sizeof(header),0); //receives an "OK" message
-						if( issuerHeader.msgType == 1){
-							std::cout << "\n message delivered!" << std::endl;
-						}
+					issuerHeader.msgOrder++;
+				}
+				break;
+				case 6:
+					count = send(sock, &issuerHeader, sizeof(header), 0);
 
-						issuerHeader.msgOrder++;
-						break;
-					default:
-						std::cout << "invalid option" << std::endl;
-						break;
+					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+					if (issuerHeader.msgType == 1)
+					{
+						std::cout << "\n message delivered!" << std::endl;
 					}
-				} 
+
+					issuerHeader.msgOrder++;
+					break;
+				default:
+					std::cout << "invalid option" << std::endl;
+					break;
+				}
+			}
 		}
-
-	}else if( issuerHeader.msgType == 2){
+	}
+	else if (issuerHeader.msgType == 2)
+	{
 		std::cout << "\n communication failed" << std::endl;
-		close(s);
-		exit(EXIT_FAILURE);
-
-	}else{
-		std::cout << "\n unknown message type" << std::endl;
-		close(s);
+		close(sock);
 		exit(EXIT_FAILURE);
 	}
-	
+	else
+	{
+		std::cout << "\n unknown message type" << std::endl;
+		close(sock);
+		exit(EXIT_FAILURE);
+	}
+}
+
+char *randomPalanetName()
+{
+	vector<string> planets;
+	planets.push_back("Mercury");
+	planets.push_back("Venus");
+	planets.push_back("Earth");
+	planets.push_back("Mars");
+	planets.push_back("Jupiter");
+	planets.push_back("Saturn");
+	planets.push_back("Urain");
+	planets.push_back("Neptune");
+
+	int random = rand() % planets.size();
+	return planets[random].c_str();
 }
