@@ -3,24 +3,26 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include <string.h>
 
 #include <arpa/inet.h>
 
 using namespace std;
 
-struct header{
-    //8 bytes header struct declaration
+struct header
+{
+    // 8 bytes header struct declaration
     unsigned short msgType;
     unsigned short msgOrigin;
     unsigned short msgDestiny;
     unsigned short msgOrder;
 };
 
-struct client{
+struct client
+{
     int socket;
     unsigned short id;
 };
-
 
 void logexit(const char *msg);
 
@@ -34,8 +36,10 @@ int server_sockaddr_init(const char *proto, const char *portstr,
 
 unsigned short getsType();
 
-unsigned short getsDestiny( unsigned short destiny );
+unsigned short getsDestiny(unsigned short destiny);
 
-int checksExib( vector<client> &clients, unsigned short id);
+int checksExib(vector<client> &clients, unsigned short id);
 
-unsigned short returnsID( const vector<client> client, char c );
+unsigned short returnsID(const vector<client> client, char c);
+
+std::string randomPlanetName();

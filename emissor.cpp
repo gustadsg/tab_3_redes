@@ -15,16 +15,14 @@
 
 #define BUFSZ 500
 
-using namespace std;
-
-string randomPlanetName();
-
 int main(int argc, char **argv)
 {
-	char string[14];
-	strcpy(string, argv[1]);
-	char *ip = strtok(string, ":"); // gets IP
-	char *port = strtok(NULL, ":"); // gets port
+	char str[14];
+	strcpy(str, argv[1]);
+	char *ip = strtok(str, ":");								 // gets IP
+	char *port = strtok(NULL, ":");							 // gets port
+	std::string planetName = randomPlanetName(); // gets planet name
+	std::cout << "Planet name: " << planetName << std::endl;
 
 	if (argv[2] < 0)
 	{
@@ -33,7 +31,6 @@ int main(int argc, char **argv)
 	}
 
 	unsigned short exhibitorID = atoi(argv[2]);
-	
 
 	// socket parse:
 	struct sockaddr_storage storage;
@@ -45,6 +42,7 @@ int main(int argc, char **argv)
 	}
 
 	int sock;
+	std::cout << "creting socket" << std::endl;
 	sock = socket(storage.ss_family, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
@@ -59,7 +57,7 @@ int main(int argc, char **argv)
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
 
-	printf("connected to %s\n", addrstr); // connection success
+	std::cout << "connected to " << addrstr << std::endl; // connection success
 
 	// communication variables:
 	size_t count;
@@ -71,10 +69,10 @@ int main(int argc, char **argv)
 	issuerHeader.msgOrder = 0;
 	issuerHeader.msgOrigin = issuerID;
 	issuerHeader.msgDestiny = exhibitorID;
-	std::string planetName = randomPlanetName();
+
 	if (issuerHeader.msgOrder == 0)
 	{
-		// sends an "OI" message type (3)
+		// sends an "HI" message type (3)
 		issuerHeader.msgType = 3;
 		count = send(sock, &issuerHeader, sizeof(header), 0);
 
@@ -99,17 +97,15 @@ int main(int argc, char **argv)
 		issuerHeader.msgType = 8;
 		issuerHeader.msgDestiny = exhibitorID;
 		issuerHeader.msgOrigin = issuerID;
-		count = send(sock, &issuerHeader, sizeof(header), 0); 
+		count = send(sock, &issuerHeader, sizeof(header), 0);
 		count = send(sock, &size_planet, sizeof(size_planet), 0);
 		count = send(sock, buf, size_planet, 0);
-
 		count = recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
 
-                    if (issuerHeader.msgType == 1)
-                    {
-                        std::cout << "\n message delivered!" << std::endl;
-                    }
-
+		if (issuerHeader.msgType == 1)
+		{
+			std::cout << "origin message delivered!" << std::endl;
+		}
 
 		// connection accepted
 		while (1)
@@ -187,20 +183,4 @@ int main(int argc, char **argv)
 		close(sock);
 		exit(EXIT_FAILURE);
 	}
-}
-
-string randomPlanetName()
-{
-	vector<string> planets;
-	planets.push_back("Mercury");
-	planets.push_back("Venus");
-	planets.push_back("Earth");
-	planets.push_back("Mars");
-	planets.push_back("Jupiter");
-	planets.push_back("Saturn");
-	planets.push_back("Urain");
-	planets.push_back("Neptune");
-
-	int random = rand() % planets.size();
-	return planets[random];
 }

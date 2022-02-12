@@ -283,7 +283,6 @@ int main(int argc, char **argv)
                             break;
 
                         case 5:
-                        case 8:
 
                             memset(buf, 0, BUFSZ);
                             size = 0;
@@ -333,14 +332,6 @@ int main(int argc, char **argv)
                                         break;
                                     }
                                 }
-
-                                if(servHeader.msgType == 8){
-                                    servHeader.msgType = 1; // sendes "OK"(1) type message
-                                    servHeader.msgDestiny = servHeader.msgOrigin;
-                                    servHeader.msgOrigin = 65535;
-                                    send(i, &servHeader, sizeof(header), 0);
-                                }
-
                                 if (aux == 0)
                                 {
                                     // could not find specified exhibitor
@@ -419,17 +410,30 @@ int main(int argc, char **argv)
                                     send(i, &servHeader, sizeof(header), 0);
                                 }
                             }
+                            break;
                         }
-                        break;
+                        case 8:
+                        {
+                            memset(buf, 0, BUFSZ);
+                            nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
+                            nbytes = recv(i, buf, size, 0);           // receives message
+                            std::cout << "Received: " << buf << std::endl;
+
+                            servHeader.msgType = 1;                       // sends "OK"(1) type message
+                            servHeader.msgDestiny = servHeader.msgOrigin; // back to the origin client
+                            servHeader.msgOrigin = 65535;                 // from server
+                            send(i, &servHeader, sizeof(header), 0);      // sends message
+
+                            break;
                         default:
                             printf("\nERROR\n");
                             exit(EXIT_FAILURE);
                         }
-                        std::cout << "sent: " << servHeader.msgType << " " << servHeader.msgDestiny << " " << servHeader.msgOrigin << " " << servHeader.msgOrder << std::endl;
-                    }
-                } // END handle data from client
-            }     // END got new incoming connection
-        }         // END looping through file descriptors
-    }             // END for(;;)
-    return 0;
-}
+                            std::cout << "sent: " << servHeader.msgType << " " << servHeader.msgDestiny << " " << servHeader.msgOrigin << " " << servHeader.msgOrder << std::endl;
+                        }
+                    } // END handle data from client
+                }     // END got new incoming connection
+            }         // END looping through file descriptors
+        }             // END for(;;)
+        return 0;
+    }
