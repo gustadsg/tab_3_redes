@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <iostream>
-#include <vector.h>
+#include <vector>
 #include "common.h"
 
 // socket libraries:
@@ -14,6 +14,10 @@
 #include <pthread.h>
 
 #define BUFSZ 500
+
+using namespace std;
+
+string randomPlanetName();
 
 int main(int argc, char **argv)
 {
@@ -29,7 +33,7 @@ int main(int argc, char **argv)
 	}
 
 	unsigned short exhibitorID = atoi(argv[2]);
-	char planetName[8] = randomPalanetName();
+	
 
 	// socket parse:
 	struct sockaddr_storage storage;
@@ -67,7 +71,7 @@ int main(int argc, char **argv)
 	issuerHeader.msgOrder = 0;
 	issuerHeader.msgOrigin = issuerID;
 	issuerHeader.msgDestiny = exhibitorID;
-
+	std::string planetName = randomPlanetName();
 	if (issuerHeader.msgOrder == 0)
 	{
 		// sends an "OI" message type (3)
@@ -89,8 +93,23 @@ int main(int argc, char **argv)
 		std::cout << "\nissuer connected - ID:" << issuerID << std::endl;
 		// inform to server the origin planet
 		memset(buf, 0, BUFSZ);
-		sprintf(buf, "origin %d %s", strlen(planetName), planetName);
-		count = send(sock, buf, strlen(buf), 0);
+		sprintf(buf, "origin %d %s", planetName.length(), planetName.c_str());
+
+		unsigned short size_planet = strlen(buf);
+		issuerHeader.msgType = 8;
+		issuerHeader.msgDestiny = exhibitorID;
+		issuerHeader.msgOrigin = issuerID;
+		count = send(sock, &issuerHeader, sizeof(header), 0); 
+		count = send(sock, &size_planet, sizeof(size_planet), 0);
+		count = send(sock, buf, size_planet, 0);
+
+		count = recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+
+                    if (issuerHeader.msgType == 1)
+                    {
+                        std::cout << "\n message delivered!" << std::endl;
+                    }
+
 
 		// connection accepted
 		while (1)
@@ -170,7 +189,7 @@ int main(int argc, char **argv)
 	}
 }
 
-char *randomPalanetName()
+string randomPlanetName()
 {
 	vector<string> planets;
 	planets.push_back("Mercury");
@@ -183,5 +202,5 @@ char *randomPalanetName()
 	planets.push_back("Neptune");
 
 	int random = rand() % planets.size();
-	return planets[random].c_str();
+	return planets[random];
 }

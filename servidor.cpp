@@ -283,6 +283,7 @@ int main(int argc, char **argv)
                             break;
 
                         case 5:
+                        case 8:
 
                             memset(buf, 0, BUFSZ);
                             size = 0;
@@ -331,6 +332,13 @@ int main(int argc, char **argv)
                                         }
                                         break;
                                     }
+                                }
+
+                                if(servHeader.msgType == 8){
+                                    servHeader.msgType = 1; // sendes "OK"(1) type message
+                                    servHeader.msgDestiny = servHeader.msgOrigin;
+                                    servHeader.msgOrigin = 65535;
+                                    send(i, &servHeader, sizeof(header), 0);
                                 }
 
                                 if (aux == 0)
@@ -413,9 +421,6 @@ int main(int argc, char **argv)
                             }
                         }
                         break;
-                        case 8:
-                            servHeader.msgType = 9;
-                            break;
                         default:
                             printf("\nERROR\n");
                             exit(EXIT_FAILURE);
