@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector>
+#include <sstream>
 #include "common.h"
 
 // socket libraries:
@@ -91,7 +92,9 @@ int main(int argc, char **argv)
 		std::cout << "\nissuer connected - ID:" << issuerID << std::endl;
 		// inform to server the origin planet
 		memset(buf, 0, BUFSZ);
-		sprintf(buf, "origin %d %s", planetName.length(), planetName.c_str());
+		std::ostringstream msg;
+		msg << "origin " << planetName.length() << " " << planetName.c_str() << std::endl;
+		memcpy(buf, msg.str().c_str(), msg.str().length());
 
 		unsigned short size_planet = strlen(buf);
 		issuerHeader.msgType = 8;

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <iostream>
+#include <sstream>
 #include "common.h"
 
 // socket libraries:
@@ -80,7 +81,9 @@ int main(int argc, char **argv)
 
 		// inform to server the origin planet
 		memset(buf, 0, BUFSZ);
-		sprintf(buf, "origin %d %s", planetName.length(), planetName.c_str());
+		std::ostringstream msg;
+		msg << "origin " << planetName.length() << " " << planetName.c_str() << std::endl;
+		memcpy(buf, msg.str().c_str(), msg.str().length());
 
 		unsigned short size_planet = strlen(buf);
 		exhibitorHeader.msgType = 8;
