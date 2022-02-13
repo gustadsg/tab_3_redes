@@ -130,11 +130,12 @@ unsigned short getsType()
     printf("\nselect message type:");
     printf("\n  [4] disconnect from server");
     printf("\n  [5] send text message");
-    printf("\n  [6] CREQ\n>>");
+    printf("\n  [6] CREQ");
+    printf("\n  [9] discover plannet of client\n>>");
 
     unsigned int type;
     scanf("%u", &type);
-    if (((type != 4) && (type != 5)) && ((type != 8) && (type != 6)))
+    if (((type != 4) && (type != 5)) && ((type != 8) && (type != 6) && (type != 9)))
     {
         return -1;
     }

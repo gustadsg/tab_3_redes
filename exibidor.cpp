@@ -65,10 +65,10 @@ int main(int argc, char **argv)
 
 	if (exhibitorHeader.msgOrder == 0)
 	{
-
+		std::cout << "sending hi message" << std::endl;
 		exhibitorHeader.msgType = 3; // sends an "HI" message (3)
 		send(s, &exhibitorHeader, sizeof(header), 0);
-
+		std::cout << "receiving ok for hi message" << std::endl;
 		recv(s, &exhibitorHeader, sizeof(header), 0);
 
 		exhibitorID = exhibitorHeader.msgDestiny;
@@ -80,6 +80,7 @@ int main(int argc, char **argv)
 	{
 
 		// inform to server the origin planet
+		std::cout << "informing planet to server" << std::endl;
 		memset(buf, 0, BUFSZ);
 		std::ostringstream msg;
 		msg << "origin " << planetName.length() << " " << planetName.c_str() << std::endl;

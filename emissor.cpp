@@ -128,8 +128,8 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-
-				issuerHeader.msgDestiny = getsDestiny(exhibitorID);
+				if (issuerHeader.msgType != 9)
+					issuerHeader.msgDestiny = getsDestiny(exhibitorID);
 
 				switch (issuerHeader.msgType)
 				{
@@ -166,6 +166,20 @@ int main(int argc, char **argv)
 					}
 
 					issuerHeader.msgOrder++;
+					break;
+				case 9:
+					memset(buf, 0, BUFSZ);
+					std::cout << "type the client you want to know the planet: ";
+					std::cin.ignore();
+					cin.getline(buf, BUFSZ);
+					issuerHeader.msgDestiny = atoi(buf);
+
+					count = send(sock, &issuerHeader, sizeof(header), 0);
+					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+					if (issuerHeader.msgType == 1)
+					{
+						std::cout << "\n message delivered!" << std::endl;
+					}
 					break;
 				default:
 					std::cout << "invalid option" << std::endl;

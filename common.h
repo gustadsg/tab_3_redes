@@ -22,6 +22,7 @@ struct client
 {
     int socket;
     unsigned short id;
+    std::string planet;
 };
 
 void logexit(const char *msg);

@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include "common.h"
@@ -181,7 +182,7 @@ int main(int argc, char **argv)
                         {
 
                         case 1:
-                            //"OK" message, from exhibitor to issuer
+                        { //"OK" message, from exhibitor to issuer
                             for (long unsigned int s = 0; s < issuers.size(); s++)
                             {
                                 if (issuers[s].id == servHeader.msgDestiny)
@@ -192,9 +193,8 @@ int main(int argc, char **argv)
                             }
 
                             break;
-
+                        }
                         case 3:
-
                             if (servHeader.msgOrigin == 0)
                             {
                                 // recognizes client: exhibitor
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
 
                             break;
                         case 4:
-
+                        {
                             // erases exhibitor's position and closes socket
                             for (long unsigned int s = 0; s < exhibitors.size(); s++)
                             {
@@ -281,9 +281,9 @@ int main(int argc, char **argv)
                                 }
                             }
                             break;
-
+                        }
                         case 5:
-
+                        {
                             memset(buf, 0, BUFSZ);
                             size = 0;
 
@@ -342,7 +342,7 @@ int main(int argc, char **argv)
                                 }
                             }
                             break;
-
+                        }
                         case 6:
                         {
                             servHeader.msgType = 7; // sends CLIST
@@ -419,21 +419,80 @@ int main(int argc, char **argv)
                             nbytes = recv(i, buf, size, 0);           // receives message
                             std::cout << "Received: " << buf << std::endl;
 
+                            for (int j = 0; j < exhibitors.size(); j++)
+                            {
+                                if (exhibitors[j].id == servHeader.msgOrigin)
+                                {
+                                    // save info in exhibitors vector
+                                    strtok(buf, " ");
+                                    strtok(NULL, " ");
+                                    char *nameOfPlanet = strtok(NULL, " ");
+                                    exhibitors[j].planet = nameOfPlanet;
+                                    break;
+                                }
+                            }
+
+                            for (int j = 0; j < issuers.size(); j++)
+                            {
+                                if (issuers[j].id == servHeader.msgOrigin)
+                                {
+                                    // save info in issuers vector
+                                    issuers[j].planet = buf;
+                                    break;
+                                }
+                            }
+
                             servHeader.msgType = 1;                       // sends "OK"(1) type message
                             servHeader.msgDestiny = servHeader.msgOrigin; // back to the origin client
                             servHeader.msgOrigin = 65535;                 // from server
                             send(i, &servHeader, sizeof(header), 0);      // sends message
 
                             break;
+                        }
+                        case 9:
+                        {
+                            int clientToFindPlanet = servHeader.msgDestiny;
+                            int clientWhoAskedForPlanet = servHeader.msgOrigin;
+
+                            // find client that matches the id in the exhibitors vector
+                            for (int j = 0; j < exhibitors.size(); j++)
+                            {
+                                if (exhibitors[j].id == clientToFindPlanet)
+                                {
+                                    // send to the client
+                                    servHeader.msgType = 5;
+                                    send(exhibitors[j].socket, &servHeader, sizeof(header), 0);
+
+                                    // assemble the message
+                                    memset(buf, 0, BUFSZ);
+                                    std::ostringstream msg;
+                                    msg << "panet of " << clientToFindPlanet << ": " << exhibitors[j].planet << std::endl;
+                                    memcpy(buf, msg.str().c_str(), msg.str().size());
+                                    size = strlen(buf);
+
+                                    send(exhibitors[j].socket, &size, sizeof(size), 0); // sends message's size
+
+                                    // sends message
+                                    send(exhibitors[j].socket, buf, size, 0);
+                                    break;
+                                }
+                            }
+                            servHeader.msgType = 1; // sends "OK"(1) type message
+                            send(i, &servHeader, sizeof(header), 0);
+                            break;
+                        }
                         default:
+                        {
                             printf("\nERROR\n");
                             exit(EXIT_FAILURE);
-                        }
                             std::cout << "sent: " << servHeader.msgType << " " << servHeader.msgDestiny << " " << servHeader.msgOrigin << " " << servHeader.msgOrder << std::endl;
+                            break;
                         }
-                    } // END handle data from client
-                }     // END got new incoming connection
-            }         // END looping through file descriptors
-        }             // END for(;;)
-        return 0;
-    }
+                        }
+                    }
+                } // END handle data from client
+            }     // END got new incoming connection
+        }         // END looping through file descriptors
+    }             // END for(;;)
+    return 0;
+}
