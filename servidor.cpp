@@ -289,6 +289,7 @@ int main(int argc, char **argv)
 
                             nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
                             nbytes = recv(i, buf, size, 0);           // receives message
+                            std::cout << "message content: " << buf << endl;
 
                             if (servHeader.msgDestiny == 0)
                             {
@@ -302,6 +303,7 @@ int main(int argc, char **argv)
                                         if (j != listener && j != i)
                                         {
                                             send(j, &servHeader, sizeof(header), 0);
+                                            size = strlen(buf);
                                             send(j, &size, sizeof(size), 0); // sends message's size
                                             send(j, buf, size, 0);           // sends message
 
@@ -321,6 +323,7 @@ int main(int argc, char **argv)
                                     if (exhibitors[s].id == servHeader.msgDestiny)
                                     {
                                         send(exhibitors[s].socket, &servHeader, sizeof(header), 0);
+                                        size = strlen(buf);
                                         send(exhibitors[s].socket, &size, sizeof(size), 0); // sends message's size
                                         send(exhibitors[s].socket, buf, size, 0);           // sends message
                                         aux++;
@@ -481,6 +484,74 @@ int main(int argc, char **argv)
                             }
                             servHeader.msgType = 1; // sends "OK"(1) type message
                             send(i, &servHeader, sizeof(header), 0);
+                            break;
+                        }
+                        case 10:
+                        {
+                            std::cout << "caso 10" << std::endl;
+                            std::vector<string> allSavedPlanets;
+                            for (int j = 0; j < exhibitors.size(); j++)
+                            {
+                                int allAreDifferent = 1;
+                                for (int k = 0; k < allSavedPlanets.size(); k++)
+                                {
+                                    if (allAreDifferent == 0)
+                                        break;
+                                    if (exhibitors[j].planet == allSavedPlanets[k])
+                                    {
+                                        allAreDifferent = 0;
+                                    }
+                                }
+                                if (allAreDifferent == 1)
+                                {
+                                    allSavedPlanets.push_back(exhibitors[j].planet);
+                                }
+                            }
+
+                            for (int j = 0; j < issuers.size(); j++)
+                            {
+                                int allAreDifferent = 1;
+                            std:
+                                cout << "issuers[j].planet: " << issuers[j].planet << std::endl;
+                                for (int k = 0; k < allSavedPlanets.size(); k++)
+                                {
+                                    if (allAreDifferent == 0)
+                                        break;
+                                    if (issuers[j].planet == allSavedPlanets[k])
+                                    {
+                                        allAreDifferent = 0;
+                                    }
+                                }
+                                if (allAreDifferent == 1)
+                                {
+                                    allSavedPlanets.push_back(issuers[j].planet);
+                                }
+                            }
+
+                            std::string allSavedPlanetsString;
+                            for (int j = 0; j < allSavedPlanets.size(); j++)
+                            {
+                                allSavedPlanetsString += allSavedPlanets[j];
+                            }
+
+                            std::cout << allSavedPlanetsString << std::endl;
+
+                            servHeader.msgType = 1; // sends "OK"(1) type message
+                            send(i, &servHeader, sizeof(header), 0);
+
+                            // send to the exhibtor
+                            servHeader.msgType = 5;
+                            send(i, &servHeader, sizeof(header), 0);
+
+                            memset(buf, 0, BUFSZ);
+                            memcpy(buf, allSavedPlanetsString.c_str(), allSavedPlanetsString.size());
+                            size = strlen(buf);
+
+                            send(i, &size, sizeof(size), 0); // sends message's size
+
+                            // sends message
+                            send(i, buf, size, 0);
+
                             break;
                         }
                         default:

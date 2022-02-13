@@ -181,6 +181,14 @@ int main(int argc, char **argv)
 						std::cout << "\n message delivered!" << std::endl;
 					}
 					break;
+				case 10:
+					count = send(sock, &issuerHeader, sizeof(header), 0);
+					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+					if (issuerHeader.msgType == 1)
+					{
+						std::cout << "\n message delivered!" << std::endl;
+					}
+					break;
 				default:
 					std::cout << "invalid option" << std::endl;
 					break;
