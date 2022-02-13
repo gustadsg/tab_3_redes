@@ -341,6 +341,8 @@ int main(int argc, char **argv)
                                     send(i, &servHeader, sizeof(header), 0);
                                 }
                             }
+                            servHeader.msgType = 1; // sends "OK"(1) type message
+                            send(i, &servHeader, sizeof(header), 0);
                             break;
                         }
                         case 6:
