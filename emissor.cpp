@@ -92,6 +92,7 @@ int main(int argc, char **argv)
 	issuerHeader.msgOrder = 0;
 	issuerHeader.msgOrigin = issuerID;
 	issuerHeader.msgDestiny = exhibitorID;
+	issuerHeader.exhibitorOffIssuer = exhibitorID;
 
 	if (issuerHeader.msgOrder == 0)
 	{
@@ -185,8 +186,8 @@ int main(int argc, char **argv)
 					}
 					break;
 				case 9: // planet idToFind
-					issuerHeader.msgDestiny = exhibitorID;  // msgDestiny = exhibtor that is conected with this issuer and will receive the message 
-					issuerHeader.msgOrigin = atoi(args[1].c_str());  // msgOrigin = client to find the planet name
+					issuerHeader.msgDestiny = issuerHeader.exhibitorOffIssuer;
+					issuerHeader.ClientToFindPlanetName = atoi(args[1].c_str());  // msgOrigin = client to find the planet name
 					count = send(sock, &issuerHeader, sizeof(header), 0);
 					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
 					if (issuerHeader.msgType == 1)

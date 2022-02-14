@@ -17,6 +17,8 @@ struct header
     unsigned short msgOrigin;
     unsigned short msgDestiny;
     unsigned short msgOrder;
+    unsigned short exhibitorOffIssuer;
+    unsigned short ClientToFindPlanetName;
 };
 
 struct client

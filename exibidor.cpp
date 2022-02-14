@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 					recv(s, &size, sizeof(size), 0);
 					recv(s, buf, size, 0);
 
-					std::cout << "\n< message from " << exhibitorHeader.msgOrigin << ": " << buf << std::endl;
+					std::cout << "< message from " << exhibitorHeader.msgOrigin << ": " << buf << std::endl;
 
 					exhibitorHeader.msgType = 1; // "OK" message
 					exhibitorHeader.msgDestiny = exhibitorHeader.msgOrigin;
@@ -163,7 +163,6 @@ int main(int argc, char **argv)
 					break;
 				}
 				case 10:
-					unsigned short size;
 					memset(buf, 0, BUFSZ);
 
 					recv(s, &size, sizeof(size), 0);

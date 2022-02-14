@@ -175,9 +175,10 @@ int main(int argc, char **argv)
                     else
                     {
                         // we got some data from a client
-                        std::cout << "\n new message from " << i << ": ";
-                        std::cout << servHeader.msgType << " " << servHeader.msgDestiny << " " << servHeader.msgOrigin << " " << servHeader.msgOrder << std::endl;
-
+                        if (servHeader.msgType != 9){
+                            std::cout << "received from " << servHeader.msgOrigin << ": ";
+                            std::cout << servHeader.msgType << " " << servHeader.msgOrigin << " " << servHeader.msgDestiny << " " << servHeader.msgOrder << std::endl;
+                        }
                         switch (servHeader.msgType)
                         {
 
@@ -454,8 +455,12 @@ int main(int argc, char **argv)
                         }
                         case 9:
                         {
-                            int clientToFindPlanet = servHeader.msgOrigin;
+                            std::cout << "received planet from " << servHeader.msgOrigin << " to " << servHeader.ClientToFindPlanetName << ": ";
+                            std::cout << servHeader.msgType << " " << servHeader.msgOrigin << " " << servHeader.ClientToFindPlanetName << " " << servHeader.msgOrder << std::endl;
+                            int clientToFindPlanet = servHeader.ClientToFindPlanetName;
                             int clientWhoAskedForPlanetExhibitor = servHeader.msgDestiny;
+                            std::cout << clientToFindPlanet << "oi"<< std::endl;;
+                            std::cout << clientWhoAskedForPlanetExhibitor;
                             int aux = 0;
 
                             // find client that matches the id in the exhibitors vector
@@ -491,7 +496,6 @@ int main(int argc, char **argv)
                                         std::ostringstream msg;
                                         msg << "planet of " << clientToFindPlanet << ": " << issuers[j].planet << std::endl;
                                         memcpy(buf, msg.str().c_str(), msg.str().size());
-                                        size = strlen(buf);
                                         break;
                                     }
                                 }
@@ -509,6 +513,7 @@ int main(int argc, char **argv)
                                 break;
                                 }
                             }
+                            perror("planet");
                             break;
                         }
                         case 10:
