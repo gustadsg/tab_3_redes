@@ -49,3 +49,7 @@ unsigned short returnsID(const vector<client> client, char c);
 std::string randomPlanetName();
 
 struct header mountHeader(std::string input, int issuerID, int lastMessageOrder);
+
+std::vector<string> allSavedPlanets;
+
+void SavePlanet(std::string planetName);

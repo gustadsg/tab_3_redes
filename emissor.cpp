@@ -45,6 +45,8 @@ int main(int argc, char **argv)
 	char *ip = strtok(str, ":");								 // gets IP
 	char *port = strtok(NULL, ":");							 // gets port
 	std::string planetName = randomPlanetName(); // gets planet name
+	SavePlanet(planetName);
+
 	std::string input;
 
 	if (argv[2] < 0)
@@ -195,7 +197,7 @@ int main(int argc, char **argv)
 						std::cout << "< ok" << std::endl;
 					}
 					break;
-				case 10: // planet idToFind
+				case 10: // planet Exhibitor
 					count = send(sock, &issuerHeader, sizeof(header), 0);
 					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
 					if (issuerHeader.msgType == 1)

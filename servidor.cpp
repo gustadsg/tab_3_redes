@@ -459,8 +459,7 @@ int main(int argc, char **argv)
                             std::cout << servHeader.msgType << " " << servHeader.msgOrigin << " " << servHeader.ClientToFindPlanetName << " " << servHeader.msgOrder << std::endl;
                             int clientToFindPlanet = servHeader.ClientToFindPlanetName;
                             int clientWhoAskedForPlanetExhibitor = servHeader.msgDestiny;
-                            std::cout << clientToFindPlanet << "oi"<< std::endl;;
-                            std::cout << clientWhoAskedForPlanetExhibitor;
+                            std::cout << "Exibidor do cliente que pediu:" << clientWhoAskedForPlanetExhibitor;
                             int aux = 0;
 
                             // find client that matches the id in the exhibitors vector
@@ -513,47 +512,48 @@ int main(int argc, char **argv)
                                 break;
                                 }
                             }
-                            perror("planet");
                             break;
                         }
                         case 10:
                         {
-                            std::vector<string> allSavedPlanets;
-                            for (long unsigned int j = 0; j < exhibitors.size(); j++)
-                            {
-                                int allAreDifferent = 1;
-                                for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
-                                {
-                                    if (allAreDifferent == 0)
-                                        break;
-                                    if (exhibitors[j].planet == allSavedPlanets[k])
-                                    {
-                                        allAreDifferent = 0;
-                                    }
-                                }
-                                if (allAreDifferent == 1)
-                                {
-                                    allSavedPlanets.push_back(exhibitors[j].planet);
-                                }
-                            }
+                            // std::vector<string> allSavedPlanets;
+                            // for (long unsigned int j = 0; j < exhibitors.size(); j++)
+                            // {
+                            //     //int allAreDifferent = 1;
+                            //     for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
+                            //     {
+                            //     //     if (allAreDifferent == 0)
+                            //     //         break;
+                            //     //     if (exhibitors[j].planet == allSavedPlanets[k])
+                            //     //     {
+                            //     //         allAreDifferent = 0;
+                            //     //     }
+                            //     // }
+                            //     // if (allAreDifferent == 1)
+                            //     // {
+                            //     //     allSavedPlanets.push_back(exhibitors[j].planet);
+                            //     // }
+                            //         if(exhibitors[j].planet != allSavedPlanets[k])
+                            //             allSavedPlanets[k+1]
+                            // }
 
-                            for (long unsigned int j = 0; j < issuers.size(); j++)
-                            {
-                                int allAreDifferent = 1;
-                                for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
-                                {
-                                    if (allAreDifferent == 0)
-                                        break;
-                                    if (issuers[j].planet == allSavedPlanets[k])
-                                    {
-                                        allAreDifferent = 0;
-                                    }
-                                }
-                                if (allAreDifferent == 1)
-                                {
-                                    allSavedPlanets.push_back(issuers[j].planet);
-                                }
-                            }
+                            // for (long unsigned int j = 0; j < issuers.size(); j++)
+                            // {
+                            //     int allAreDifferent = 1;
+                            //     for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
+                            //     {
+                            //         if (allAreDifferent == 0)
+                            //             break;
+                            //         if (issuers[j].planet == allSavedPlanets[k])
+                            //         {
+                            //             allAreDifferent = 0;
+                            //         }
+                            //     }
+                            //     if (allAreDifferent == 1)
+                            //     {
+                            //         allSavedPlanets.push_back(issuers[j].planet);
+                            //     }
+                            // }
 
                             std::string allSavedPlanetsString;
                             for (long unsigned int j = 0; j < allSavedPlanets.size(); j++)
