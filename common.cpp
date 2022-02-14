@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <algorithm>
 
 #include <arpa/inet.h>
 
@@ -242,4 +243,77 @@ std::string randomPlanetName()
     srand(time(NULL));
     int random = rand() % planets.size();
     return planets[random];
+}
+
+struct header mountHeader(std::string input, int issuerID, int lastMessageOrder)
+{
+	struct header header;
+
+	transform(input.begin(), input.end(), input.begin(), ::tolower);
+
+	header.msgOrigin = issuerID;
+
+	if (!(input.rfind("planet", 0) == 0 || input.rfind("planetlist", 0) == 0))
+		header.msgOrder = lastMessageOrder++;
+
+	// hi
+	if (input.rfind("hi", 0) == 0)
+	{
+		header.msgType = 3;
+		header.msgOrder = 1;
+
+		return header;
+	}
+
+	// kill
+	if (input.rfind("kill", 0) == 0)
+	{
+		header.msgType = 4;
+
+		return header;
+	}
+
+	// msg
+	if (input.rfind("msg", 0) == 0)
+	{
+		header.msgType = 5;
+
+		return header;
+	}
+
+	// creq
+	if (input.rfind("creq", 0) == 0)
+	{
+		header.msgType = 6;
+
+		return header;
+	}
+
+	// origin
+	if (input.rfind("origin", 0) == 0)
+	{
+		header.msgType = 8;
+
+		return header;
+	}
+
+    // planetlist
+	if (input.rfind("planetlist", 0) == 0)
+	{
+		header.msgType = 10;
+		header.msgOrder = lastMessageOrder;
+
+		return header;
+	}
+
+	// planet
+	if (input.rfind("planet", 0) == 0)
+	{
+		header.msgType = 9;
+		header.msgOrder = lastMessageOrder;
+
+		return header;
+	}
+
+    return header;
 }

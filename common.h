@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
+#include <algorithm>
 
 #include <arpa/inet.h>
 
@@ -44,3 +45,5 @@ int checksExib(vector<client> &clients, unsigned short id);
 unsigned short returnsID(const vector<client> client, char c);
 
 std::string randomPlanetName();
+
+struct header mountHeader(std::string input, int issuerID, int lastMessageOrder);

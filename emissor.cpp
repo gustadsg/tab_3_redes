@@ -17,83 +17,12 @@
 
 #define BUFSZ 500
 
-struct header mountHeader(std::string input, int issuerID, int lastMessageOrder)
-{
-	struct header header;
-
-	transform(input.begin(), input.end(), input.begin(), ::tolower);
-
-	header.msgOrigin = issuerID;
-
-	if (!(input.rfind("planet", 0) == 0 || input.rfind("planetlist", 0) == 0))
-		header.msgOrder = lastMessageOrder++;
-
-	// hi
-	if (input.rfind("hi", 0) == 0)
-	{
-		header.msgType = 3;
-		header.msgOrder = 1;
-
-		return header;
-	}
-
-	// kill
-	if (input.rfind("kill", 0) == 0)
-	{
-		header.msgType = 4;
-
-		return header;
-	}
-
-	// msg
-	if (input.rfind("msg", 0) == 0)
-	{
-		header.msgType = 5;
-
-		return header;
-	}
-
-	// creq
-	if (input.rfind("creq", 0) == 0)
-	{
-		header.msgType = 6;
-
-		return header;
-	}
-
-	// origin
-	if (input.rfind("origin", 0) == 0)
-	{
-		header.msgType = 8;
-
-		return header;
-	}
-
-	// planet
-	if (input.rfind("planet", 0) == 0)
-	{
-		header.msgType = 9;
-		header.msgOrder = lastMessageOrder;
-
-		return header;
-	}
-
-	// planetlist
-	if (input.rfind("planetlist", 0) == 0)
-	{
-		header.msgType = 10;
-		header.msgOrder = lastMessageOrder;
-
-		return header;
-	}
-}
-
 std::vector<std::string> split(std::string str, char delimiter)
 {
 	std::vector<std::string> internal;
 	int start = 0;
 
-	for (int i = 0; i < str.length(); i++)
+	for (long unsigned int i = 0; i < str.length(); i++)
 	{
 		if (str[i] == delimiter)
 		{
@@ -244,8 +173,6 @@ int main(int argc, char **argv)
 					{
 						std::cout << "< ok" << std::endl;
 					}
-
-					issuerHeader.msgOrder++;
 				}
 				break;
 				case 6: // creq idPlanet
@@ -256,11 +183,10 @@ int main(int argc, char **argv)
 					{
 						std::cout << "< ok" << std::endl;
 					}
-
-					issuerHeader.msgOrder++;
 					break;
 				case 9: // planet idToFind
-					issuerHeader.msgDestiny = atoi(args[1].c_str());
+					issuerHeader.msgDestiny = exhibitorID;  // msgDestiny = exhibtor that is conected with this issuer and will receive the message 
+					issuerHeader.msgOrigin = atoi(args[1].c_str());  // msgOrigin = client to find the planet name
 					count = send(sock, &issuerHeader, sizeof(header), 0);
 					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
 					if (issuerHeader.msgType == 1)

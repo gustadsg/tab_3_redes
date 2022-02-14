@@ -260,12 +260,12 @@ int main(int argc, char **argv)
                             break;
                         case 4:
                         {
+                            std::cout << "Received kill from " << servHeader.msgOrigin << endl;
                             // erases exhibitor's position and closes socket
                             for (long unsigned int s = 0; s < exhibitors.size(); s++)
                             {
                                 if (exhibitors[s].id == servHeader.msgDestiny)
                                 {
-                                    send(exhibitors[s].socket, &servHeader, sizeof(header), 0);
                                     close(exhibitors[s].socket);
                                     exhibitors.erase(exhibitors.begin() + (s - 1));
                                 }
@@ -290,10 +290,9 @@ int main(int argc, char **argv)
                             nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
                             nbytes = recv(i, buf, size, 0);           // receives message
                             std::cout << "message content: " << buf << endl;
-
+            
                             if (servHeader.msgDestiny == 0)
                             {
-
                                 for (j = 0; j <= fdmax; j++)
                                 {
                                     // send to everyone!
@@ -315,10 +314,12 @@ int main(int argc, char **argv)
                                     }
                                 }
                             }
+
                             else
                             {
                                 int aux = 0;
-                                for (long unsigned int s = 0; s <= exhibitors.size(); s++)
+   
+                               for (long unsigned int s = 0; s <= exhibitors.size(); s++)
                                 {
                                     if (exhibitors[s].id == servHeader.msgDestiny)
                                     {
@@ -335,14 +336,13 @@ int main(int argc, char **argv)
                                         break;
                                     }
                                 }
-                                if (aux == 0)
-                                {
-                                    // could not find specified exhibitor
-                                    servHeader.msgType = 2; // sendes "ERROR"(2) type message
-                                    servHeader.msgDestiny = servHeader.msgOrigin;
-                                    servHeader.msgOrigin = 65535;
-                                    send(i, &servHeader, sizeof(header), 0);
-                                }
+                                    if (aux == 0) // could not find specified exhibitor
+                                    {
+                                        servHeader.msgType = 2; // sendes "ERROR"(2) type message
+                                        servHeader.msgDestiny = servHeader.msgOrigin;
+                                        servHeader.msgOrigin = 65535;
+                                        send(i, &servHeader, sizeof(header), 0);
+                                    }
                             }
                             servHeader.msgType = 1; // sends "OK"(1) type message
                             send(i, &servHeader, sizeof(header), 0);
@@ -406,9 +406,8 @@ int main(int argc, char **argv)
                                     }
                                 }
 
-                                if (aux == 0)
+                                if (aux == 0)  // could not find specified exhibitor
                                 {
-                                    // could not find specified exhibitor
                                     servHeader.msgType = 2; // sendes "ERROR"(2) type message
                                     servHeader.msgDestiny = servHeader.msgOrigin;
                                     servHeader.msgOrigin = 65535;
@@ -422,9 +421,8 @@ int main(int argc, char **argv)
                             memset(buf, 0, BUFSZ);
                             nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
                             nbytes = recv(i, buf, size, 0);           // receives message
-                            std::cout << "Received: " << buf << std::endl;
 
-                            for (int j = 0; j < exhibitors.size(); j++)
+                            for (long unsigned int j = 0; j < exhibitors.size(); j++)
                             {
                                 if (exhibitors[j].id == servHeader.msgOrigin)
                                 {
@@ -437,7 +435,7 @@ int main(int argc, char **argv)
                                 }
                             }
 
-                            for (int j = 0; j < issuers.size(); j++)
+                            for (long unsigned int j = 0; j < issuers.size(); j++)
                             {
                                 if (issuers[j].id == servHeader.msgOrigin)
                                 {
@@ -456,44 +454,70 @@ int main(int argc, char **argv)
                         }
                         case 9:
                         {
-                            int clientToFindPlanet = servHeader.msgDestiny;
-                            int clientWhoAskedForPlanet = servHeader.msgOrigin;
+                            int clientToFindPlanet = servHeader.msgOrigin;
+                            int clientWhoAskedForPlanetExhibitor = servHeader.msgDestiny;
+                            int aux = 0;
 
                             // find client that matches the id in the exhibitors vector
-                            for (int j = 0; j < exhibitors.size(); j++)
+                            for (long unsigned int j = 0; j < exhibitors.size(); j++)
                             {
                                 if (exhibitors[j].id == clientToFindPlanet)
                                 {
                                     // send to the client
-                                    servHeader.msgType = 5;
+                                    aux = 1;
+                                    servHeader.msgType = 10;
                                     send(exhibitors[j].socket, &servHeader, sizeof(header), 0);
 
                                     // assemble the message
                                     memset(buf, 0, BUFSZ);
                                     std::ostringstream msg;
-                                    msg << "panet of " << clientToFindPlanet << ": " << exhibitors[j].planet << std::endl;
+                                    msg << "planet of " << clientToFindPlanet << ": " << exhibitors[j].planet << std::endl;
                                     memcpy(buf, msg.str().c_str(), msg.str().size());
-                                    size = strlen(buf);
-
-                                    send(exhibitors[j].socket, &size, sizeof(size), 0); // sends message's size
-
-                                    // sends message
-                                    send(exhibitors[j].socket, buf, size, 0);
                                     break;
                                 }
                             }
-                            servHeader.msgType = 1; // sends "OK"(1) type message
-                            send(i, &servHeader, sizeof(header), 0);
+                            if(aux == 0){
+                                // find client that matches the id in the issuers vector
+                                for (long unsigned int j = 0; j < issuers.size(); j++)
+                                {
+                                    if (issuers[j].id == clientToFindPlanet)
+                                    {
+                                        // send to the client
+                                        servHeader.msgType = 5;
+                                        send(issuers[j].socket, &servHeader, sizeof(header), 0);
+
+                                        // assemble the message
+                                        memset(buf, 0, BUFSZ);
+                                        std::ostringstream msg;
+                                        msg << "planet of " << clientToFindPlanet << ": " << issuers[j].planet << std::endl;
+                                        memcpy(buf, msg.str().c_str(), msg.str().size());
+                                        size = strlen(buf);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            for (long unsigned int j = 0; j < exhibitors.size(); j++)
+                            {
+                                if (exhibitors[j].id == clientWhoAskedForPlanetExhibitor)
+                                {
+                                size = strlen(buf);
+                                send(exhibitors[j].socket, &size, sizeof(size), 0); // sends message's size
+                                send(exhibitors[j].socket, buf, size, 0); // sends message
+                                servHeader.msgType = 1; // sends "OK"(1) type message
+                                send(i, &servHeader, sizeof(header), 0);
+                                break;
+                                }
+                            }
                             break;
                         }
                         case 10:
                         {
-                            std::cout << "caso 10" << std::endl;
                             std::vector<string> allSavedPlanets;
-                            for (int j = 0; j < exhibitors.size(); j++)
+                            for (long unsigned int j = 0; j < exhibitors.size(); j++)
                             {
                                 int allAreDifferent = 1;
-                                for (int k = 0; k < allSavedPlanets.size(); k++)
+                                for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
                                 {
                                     if (allAreDifferent == 0)
                                         break;
@@ -508,12 +532,10 @@ int main(int argc, char **argv)
                                 }
                             }
 
-                            for (int j = 0; j < issuers.size(); j++)
+                            for (long unsigned int j = 0; j < issuers.size(); j++)
                             {
                                 int allAreDifferent = 1;
-                            std:
-                                cout << "issuers[j].planet: " << issuers[j].planet << std::endl;
-                                for (int k = 0; k < allSavedPlanets.size(); k++)
+                                for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
                                 {
                                     if (allAreDifferent == 0)
                                         break;
@@ -529,7 +551,7 @@ int main(int argc, char **argv)
                             }
 
                             std::string allSavedPlanetsString;
-                            for (int j = 0; j < allSavedPlanets.size(); j++)
+                            for (long unsigned int j = 0; j < allSavedPlanets.size(); j++)
                             {
                                 allSavedPlanetsString += allSavedPlanets[j];
                             }
