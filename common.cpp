@@ -121,28 +121,6 @@ int checksExib(vector<client> &clients, unsigned short id) {
     // return 0 case id param is unused
 }
 
-unsigned short getsDestiny(unsigned short exhibitorID) {
-
-    std::cout << "\nchoose message's destiny:" << std::endl;
-    unsigned int d;
-
-    while (1) {
-        std::cout << " [0] all exhibitors" << std::endl;
-        std::cout << " [" << exhibitorID << "] connected exhibitor" << std::endl;
-        std::cin.ignore();
-        scanf("%u", &d);
-
-        if ((d == 0) || (d == exhibitorID)) {
-            break;
-        }
-        else {
-            std::cout << "invalid destination" << std::endl;
-        }
-    }
-
-    return ((d == 0) ? d : exhibitorID);
-}
-
 unsigned short returnsID(const vector<client> client, char c) {
     if (client.size() == 1) {
         switch (c) {

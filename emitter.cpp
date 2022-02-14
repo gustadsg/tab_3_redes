@@ -108,10 +108,10 @@ int main(int argc, char **argv)
 		}
 		
 		count = recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
-		std::cout << count << " " <<emissor_ID << endl;
+		std::cout << "< ok " << emissor_ID <<std::endl;
 		emissor_Header.msg_tipo = 1;
 	}
-
+	std::cout << "> ";
 	if (emissor_Header.msg_tipo == 1)	{
 		// inform to server the origin planet
 		std::cin.ignore();
@@ -133,11 +133,11 @@ int main(int argc, char **argv)
 			count = send(socket_emissor, &size, sizeof(size), 0);		// sends message's size first
 			count = send(socket_emissor, args[2].c_str(), size, 0); // sends message
 
-			count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
-			std::cout << count << endl;
-			if (count != sizeof(header)) {
-				logexit("send"); // in case of error
-			}
+			// count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+			// std::cout << count << endl;
+			// if (count != sizeof(header)) {
+			// 	logexit("send"); // in case of error
+			// }
 			
 			recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
 		}
@@ -168,6 +168,9 @@ int main(int argc, char **argv)
 
 				switch (emissor_Header.msg_tipo)
 				{
+					case 1:
+
+					recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
 
 					case 5: // msg idPlanet numCharsMsg message
 					{

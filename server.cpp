@@ -166,7 +166,7 @@ int main(int argc, char **argv)
                     else
                     {
                         // we got some data from a client
-                        if (server_header.msg_tipo != (9 && 8 && 3)){
+                        if (server_header.msg_tipo != (9 && 8 && 3 && 5)){
                             std::cout << "received from " << server_header.msg_origem << ": ";
                             std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
                         }
@@ -267,8 +267,9 @@ int main(int argc, char **argv)
 
                                 nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
                                 nbytes = recv(i, buf, size, 0);           // receives message
-                                std::cout << "message content: " << buf << endl;
-                
+                                std::cout << "sent message from " << server_header.msg_origem << " to " << server_header.msg_destino << ": ";
+                                std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
+                                int aux = 0;
                                 if (server_header.msg_destino == 0)  {
                                     for (j = 0; j <= fdmax; j++)  {
                                         // send to everyone!
@@ -289,12 +290,12 @@ int main(int argc, char **argv)
                                 }
 
                                 else  {
-                                    int aux = 0;
     
                                 for (long unsigned int s = 0; s <= exibidores.size(); s++)  {
                                         if (exibidores[s].id == server_header.msg_destino)   {
                                             send(exibidores[s].socket, &server_header, sizeof(header), 0);
                                             size = strlen(buf);
+                                            std::cout << buf << endl;
                                             send(exibidores[s].socket, &size, sizeof(size), 0); // sends message's size
                                             send(exibidores[s].socket, buf, size, 0);           // sends message
                                             aux++;
@@ -305,12 +306,12 @@ int main(int argc, char **argv)
                                             break;
                                         }
                                     }
-                                        if (aux == 0) {// could not find specified exibidor  {
-                                            server_header.msg_tipo = 2; // sendes "ERROR"(2) type message
-                                            server_header.msg_destino = server_header.msg_origem;
-                                            server_header.msg_origem = 65535;
-                                            send(i, &server_header, sizeof(header), 0);
-                                        }
+                                if (aux == 0) {// could not find specified exibidor  {
+                                    server_header.msg_tipo = 2; // sendes "ERROR"(2) type message
+                                    server_header.msg_destino = server_header.msg_origem;
+                                    server_header.msg_origem = 65535;
+                                    send(i, &server_header, sizeof(header), 0);
+                                }
                                 }
                                 server_header.msg_tipo = 1; // sends "OK"(1) type message
                                 send(i, &server_header, sizeof(header), 0);
@@ -381,9 +382,8 @@ int main(int argc, char **argv)
                                         strtok(buf, " ");
                                         strtok(NULL, " ");
                                         char *NomeDoPlaneta = strtok(NULL, " ");
-                                        exibidores[j].planet = NomeDoPlaneta;
                                         std::cout << NomeDoPlaneta;
-                                        std::cout << "received "<< NomeDoPlaneta << "from" << exibidores[j].id << ": ";
+                                        std::cout << "received "<< NomeDoPlaneta << "from " << exibidores[j].id << ": ";
                                         std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << 
                                             server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
                                         break;
@@ -397,7 +397,7 @@ int main(int argc, char **argv)
                                         strtok(NULL, " ");
                                         char *NomeDoPlaneta = strtok(NULL, " ");
                                         emissores[j].planet = NomeDoPlaneta;
-                                        std::cout << "received "<< emissores[j].planet << "from" << emissores[j].id << ": ";
+                                        std::cout << "received "<< NomeDoPlaneta << "from " << emissores[j].id << ": ";
                                         std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << 
                                             server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
                                         break;
@@ -416,7 +416,6 @@ int main(int argc, char **argv)
                                 std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.ID_Cliente_Planeta_Pedido << " " << server_header.msg_contagem << std::endl;
                                 int clientToFindPlanet = server_header.ID_Cliente_Planeta_Pedido;
                                 int clientWhoAskedForPlanetExhibitor = server_header.msg_destino;
-                                std::cout << "Exibidor do cliente que pediu:" << clientWhoAskedForPlanetExhibitor;
                                 int aux = 0;
 
                                 // find client that matches the id in the exibidores vector
@@ -424,7 +423,7 @@ int main(int argc, char **argv)
                                     if (exibidores[j].id == clientToFindPlanet)   {
                                         // send to the client
                                         aux = 1;
-                                        server_header.msg_tipo = 10;
+                                        server_header.msg_tipo = 9;
                                         send(exibidores[j].socket, &server_header, sizeof(header), 0);
 
                                         // assemble the message
@@ -440,7 +439,7 @@ int main(int argc, char **argv)
                                     for (long unsigned int j = 0; j < emissores.size(); j++)  {
                                         if (emissores[j].id == clientToFindPlanet)   {
                                             // send to the client
-                                            server_header.msg_tipo = 5;
+                                            server_header.msg_tipo = 9;
                                             send(emissores[j].socket, &server_header, sizeof(header), 0);
 
                                             // assemble the message
@@ -455,12 +454,13 @@ int main(int argc, char **argv)
 
                                 for (long unsigned int j = 0; j < exibidores.size(); j++)  {
                                     if (exibidores[j].id == clientWhoAskedForPlanetExhibitor)  {
-                                    size = strlen(buf);
-                                    send(exibidores[j].socket, &size, sizeof(size), 0); // sends message's size
-                                    send(exibidores[j].socket, buf, size, 0); // sends message
-                                    server_header.msg_tipo = 1; // sends "OK"(1) type message
-                                    send(i, &server_header, sizeof(header), 0);
-                                    break;
+                                        send(exibidores[j].socket, &server_header, sizeof(header), 0);
+                                        size = strlen(buf);
+                                        send(exibidores[j].socket, &size, sizeof(size), 0); // sends message's size
+                                        send(exibidores[j].socket, buf, size, 0); // sends message
+                                        server_header.msg_tipo = 1; // sends "OK"(1) type message
+                                        send(i, &server_header, sizeof(header), 0);
+                                        break;
                                     }
                                 }
                                 break;

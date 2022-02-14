@@ -38,8 +38,6 @@ int server_sockaddr_init(const char *proto, const char *portstr,
 
 unsigned short getsType();
 
-unsigned short getsDestiny(unsigned short destiny);
-
 int checksExib(vector<client> &clients, unsigned short id);
 
 unsigned short returnsID(const vector<client> client, char c);

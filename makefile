@@ -1,6 +1,6 @@
 all:
 	g++ -Wall -c common.cpp 
-	g++ -Wall emissor.cpp common.o -o emissor
-	g++ -Wall exibidor.cpp common.o -o exibidor
-	g++ -Wall servidor.cpp common.o -o servidor 
+	g++ -Wall emitter.cpp common.o -o emitter
+	g++ -Wall exhibitor.cpp common.o -o exhibitor
+	g++ -Wall server.cpp common.o -o server 
 clean:
