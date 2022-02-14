@@ -21,17 +21,17 @@ int main(int argc, char **argv)
 	char string[14];
 	strcpy(string, argv[1]);
 	char *ip;
-	char *port;
-	std::string planetName = randomPlanetName(); // gets planet name
+	char *porta;
+	std::string planetName = "Netuno"; // gets planet name
 
 	ip = strtok(string, ":");
-	port = strtok(NULL, ":");
+	porta = strtok(NULL, ":");
 
 	char buf[BUFSZ];
 
 	struct sockaddr_storage storage;
 
-	if (0 != addrparse(ip, port, &storage))
+	if (0 != addrparse(ip, porta, &storage))
 	{
 		printf("error\n");
 		exit(EXIT_FAILURE);
@@ -54,139 +54,138 @@ int main(int argc, char **argv)
 
 	printf("connected to %s\n", addrstr);
 
-	struct header exhibitorHeader;
+	struct header exibidor_header;
 
-	unsigned short exhibitorID = 0;
+	unsigned short exibidor_ID = 0;
 
-	exhibitorHeader.msgOrder = 0;
-	exhibitorHeader.msgDestiny = 65535; // server's ID
-	exhibitorHeader.msgOrigin = exhibitorID;
+	exibidor_header.msg_contagem = 0;
+	exibidor_header.msg_destino = 65535; // server's ID
+	exibidor_header.msg_origem = exibidor_ID;
 
-	if (exhibitorHeader.msgOrder == 0)
+	if (exibidor_header.msg_contagem == 0)
 	{
 		// sends an "HI" message type (3)
 		std::cout << "> hi" << std::endl;
-		exhibitorHeader.msgType = 3; 
-		send(s, &exhibitorHeader, sizeof(header), 0);
+		exibidor_header.msg_tipo = 3; 
+		send(s, &exibidor_header, sizeof(header), 0);
 		// receiving ok for hi message
-		recv(s, &exhibitorHeader, sizeof(header), 0);
+		recv(s, &exibidor_header, sizeof(header), 0);
 
-		exhibitorID = exhibitorHeader.msgDestiny;
+		exibidor_ID = exibidor_header.msg_destino;
 
-		std::cout << "< ok " << exhibitorID << std::endl;
+		std::cout << "< ok " << exibidor_ID << std::endl;
 	}
 
-	if (exhibitorHeader.msgType == 1)
+	if (exibidor_header.msg_tipo == 1)
 	{
 
 		// inform to server the origin planet
 		memset(buf, 0, BUFSZ);
 		std::ostringstream msg;
+
+
+
 		msg << "origin " << planetName.length() << " " << planetName.c_str() << std::endl;
 		memcpy(buf, msg.str().c_str(), msg.str().length());
 		std::cout << "> " << msg.str();
 
 		unsigned short size_planet = strlen(buf);
-		exhibitorHeader.msgType = 8;
-		exhibitorHeader.msgDestiny = 65535;
-		exhibitorHeader.msgOrigin = exhibitorID;
-		exhibitorHeader.msgOrder += 1;
-		send(s, &exhibitorHeader, sizeof(header), 0);
+		exibidor_header.msg_tipo = 8;
+		exibidor_header.msg_destino = 65535;
+		exibidor_header.msg_origem = exibidor_ID;
+		exibidor_header.msg_contagem += 1;
+		send(s, &exibidor_header, sizeof(header), 0);
 		send(s, &size_planet, sizeof(size_planet), 0);
 		send(s, buf, size_planet, 0);
-		recv(s, &exhibitorHeader, sizeof(header), 0); // receives an "OK" message
+		recv(s, &exibidor_header, sizeof(header), 0); // receives an "OK" message
 
-		if (exhibitorHeader.msgType == 1)
+		if (exibidor_header.msg_tipo == 1)
 		{
 			std::cout << "< ok" << std::endl;
 		}
 
-		while (1)
-		{
-			recv(s, &exhibitorHeader, sizeof(header), 0);
+		while (1) {
+			recv(s, &exibidor_header, sizeof(header), 0);
 
-			if (exhibitorHeader.msgDestiny != exhibitorID)
-			{
-				exhibitorHeader.msgType = 2;
-				exhibitorHeader.msgDestiny = exhibitorHeader.msgOrigin;
-				exhibitorHeader.msgOrigin = exhibitorID;
+			if (exibidor_header.msg_destino != exibidor_ID) {
+				exibidor_header.msg_tipo = 2;
+				exibidor_header.msg_destino = exibidor_header.msg_origem;
+				exibidor_header.msg_origem = exibidor_ID;
 			}
-			else
-			{
-				switch (exhibitorHeader.msgType)
-				{
-				case 4:
-					// exhibitorHeader.msgType = 1; // "OK" message
-					// exhibitorHeader.msgDestiny = exhibitorHeader.msgOrigin;
-					// exhibitorHeader.msgOrigin = exhibitorID;
-					//send(s, &exhibitorHeader, sizeof(header), 0);
+			else {
+				switch (exibidor_header.msg_tipo) {
+					case 4:
+						// exibidor_header.msg_tipo = 1; // "OK" message
+						// exibidor_header.msg_destino = exibidor_header.msg_origem;
+						// exibidor_header.msg_origem = exibidor_ID;
+						//send(s, &exibidor_header, sizeof(header), 0);
 
-					close(s);
-					
-					std::cout << "< ok" << std::endl;
-					exit(EXIT_SUCCESS);
-					break;
-				case 5:
-					unsigned short size;
-					memset(buf, 0, BUFSZ);
+						close(s);
+						
+						std::cout << "< ok" << std::endl;
+						exit(EXIT_SUCCESS);
+						break;
+					case 5:
+						unsigned short size;
+						memset(buf, 0, BUFSZ);
 
-					recv(s, &size, sizeof(size), 0);
-					recv(s, buf, size, 0);
+						recv(s, &size, sizeof(size), 0);
+						recv(s, buf, size, 0);
 
-					std::cout << "< message from " << exhibitorHeader.msgOrigin << ": " << buf << std::endl;
+						std::cout << "< message from " << exibidor_header.msg_origem << ": " << buf << std::endl;
 
-					exhibitorHeader.msgType = 1; // "OK" message
-					exhibitorHeader.msgDestiny = exhibitorHeader.msgOrigin;
-					exhibitorHeader.msgOrigin = exhibitorID;
+						exibidor_header.msg_tipo = 1; // "OK" message
+						exibidor_header.msg_destino = exibidor_header.msg_origem;
+						exibidor_header.msg_origem = exibidor_ID;
 
-					send(s, &exhibitorHeader, sizeof(header), 0);
+						send(s, &exibidor_header, sizeof(header), 0);
 
-					break;
-				case 7:
-				{
-					unsigned short N = 0;
+						break;
+					case 7:	{
+						unsigned short N = 0;
 
-					recv(s, &N, sizeof(N), 0);
-					std::cout << "clist: " << N << " ";
-					unsigned short clist[N];
-					recv(s, clist, N, 0);
+						recv(s, &N, sizeof(N), 0);
+						std::cout << "clist: " << N << " ";
+						unsigned short clist[N];
+						recv(s, clist, N, 0);
 
-					for (int i = 0; i < N; i++) {
-						std::cout << clist[i] << " ";
+						for (int i = 0; i < N; i++) {
+							std::cout << clist[i] << " ";
+						}
+						std::cout << endl;
+						exibidor_header.msg_origem = 1;
+						exibidor_header.msg_destino = exibidor_header.msg_origem;
+						exibidor_header.msg_origem = exibidor_ID;
+
+						send(s, &exibidor_header, sizeof(exibidor_header), 0);
+						break;
 					}
-					std::cout << endl;
-					exhibitorHeader.msgOrigin = 1;
-					exhibitorHeader.msgDestiny = exhibitorHeader.msgOrigin;
-					exhibitorHeader.msgOrigin = exhibitorID;
+					case 10: {
+						memset(buf, 0, BUFSZ);
 
-					send(s, &exhibitorHeader, sizeof(exhibitorHeader), 0);
-					break;
-				}
-				case 10:
-					memset(buf, 0, BUFSZ);
+						recv(s, &size, sizeof(size), 0);
+						recv(s, buf, size, 0);
 
-					recv(s, &size, sizeof(size), 0);
-					recv(s, buf, size, 0);
+						std::cout << buf << std::endl;
 
-					std::cout << buf << std::endl;
+						exibidor_header.msg_tipo = 1; // "OK" message
+						exibidor_header.msg_destino = exibidor_header.msg_origem;
+						exibidor_header.msg_origem = exibidor_ID;
 
-					exhibitorHeader.msgType = 1; // "OK" message
-					exhibitorHeader.msgDestiny = exhibitorHeader.msgOrigin;
-					exhibitorHeader.msgOrigin = exhibitorID;
+						send(s, &exibidor_header, sizeof(header), 0);
 
-					send(s, &exhibitorHeader, sizeof(header), 0);
-
-					break;
-
-				default:
-					printf("\nERROR\n");
-					exit(EXIT_FAILURE);
-					break;
+						break;
+					}
+					default: {
+						printf("\nERROR\n");
+						exit(EXIT_FAILURE);
+						break;
+					}
 				}
 			}
 		}
 	}
-	else if (exhibitorHeader.msgType == 2)
+	else if (exibidor_header.msg_tipo == 2)
 	{
 		std::cout << "\ncommunication failed" << std::endl;
 		close(s);

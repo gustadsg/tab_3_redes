@@ -10,19 +10,17 @@
 
 using namespace std;
 
-struct header
-{
+struct header{
     // 8 bytes header struct declaration
-    unsigned short msgType;
-    unsigned short msgOrigin;
-    unsigned short msgDestiny;
-    unsigned short msgOrder;
-    unsigned short exhibitorOffIssuer;
-    unsigned short ClientToFindPlanetName;
+    unsigned short msg_tipo;
+    unsigned short msg_origem;
+    unsigned short msg_destino;
+    unsigned short msg_contagem;
+    unsigned short exibidor_do_emissor;
+    unsigned short ID_Cliente_Planeta_Pedido;
 };
 
-struct client
-{
+struct client{
     int socket;
     unsigned short id;
     std::string planet;
@@ -45,8 +43,6 @@ unsigned short getsDestiny(unsigned short destiny);
 int checksExib(vector<client> &clients, unsigned short id);
 
 unsigned short returnsID(const vector<client> client, char c);
-
-std::string randomPlanetName();
 
 struct header mountHeader(std::string input, int issuerID, int lastMessageOrder);
 

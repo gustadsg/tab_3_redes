@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include "common.h"
+#include "istream"
 
 // socket libraries:
 #include <sys/types.h>
@@ -17,14 +18,14 @@
 
 #define BUFSZ 500
 
-std::vector<std::string> split(std::string str, char delimiter)
+std::vector<std::string> split(std::string str, char delimitador)
 {
 	std::vector<std::string> internal;
 	int start = 0;
 
 	for (long unsigned int i = 0; i < str.length(); i++)
 	{
-		if (str[i] == delimiter)
+		if (str[i] == delimitador)
 		{
 			internal.push_back(str.substr(start, i - start));
 			start = i + 1;
@@ -44,7 +45,7 @@ int main(int argc, char **argv)
 	strcpy(str, argv[1]);
 	char *ip = strtok(str, ":");								 // gets IP
 	char *port = strtok(NULL, ":");							 // gets port
-	std::string planetName = randomPlanetName(); // gets planet name
+	//std::string Nome_Planeta = Gera_Nome_Planeta(); // gets planet name
 
 	std::string input;
 
@@ -54,7 +55,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	unsigned short exhibitorID = atoi(argv[2]);
+	unsigned short exibidor_ID = atoi(argv[2]);
 
 	// socket parse:
 	struct sockaddr_storage storage;
@@ -65,15 +66,15 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	int sock;
-	std::cout << "creating socket" << std::endl;
-	sock = socket(storage.ss_family, SOCK_STREAM, 0);
-	if (sock == -1)
+	int socket_emissor;
+	std::cout << "criando o socket" << std::endl;
+	socket_emissor = socket(storage.ss_family, SOCK_STREAM, 0);
+	if (socket_emissor == -1)
 	{
-		logexit("socket");
+		logexit("socket_emissor");
 	}
 	struct sockaddr *addr = (struct sockaddr *)(&storage);
-	if (0 != connect(sock, addr, sizeof(storage)))
+	if (0 != connect(socket_emissor, addr, sizeof(storage)))
 	{
 		logexit("connect");
 	}
@@ -85,142 +86,148 @@ int main(int argc, char **argv)
 
 	// communication variables:
 	size_t count;
-	struct header issuerHeader;
+	struct header emissor_Header;
+	unsigned short emissor_ID = 1;
 
-	char buf[BUFSZ];
-	unsigned short issuerID = 1;
+	emissor_Header.msg_contagem = 0;
+	emissor_Header.msg_origem = emissor_ID;
+	emissor_Header.msg_destino = exibidor_ID;
+	emissor_Header.exibidor_do_emissor = exibidor_ID;
 
-	issuerHeader.msgOrder = 0;
-	issuerHeader.msgOrigin = issuerID;
-	issuerHeader.msgDestiny = exhibitorID;
-	issuerHeader.exhibitorOffIssuer = exhibitorID;
-
-	if (issuerHeader.msgOrder == 0)
-	{
-		// sends an "HI" message type (3)
-		std::cout << "> hi" << std::endl;
-		issuerHeader.msgType = 3;
-		count = send(sock, &issuerHeader, sizeof(header), 0);
-
-		if (count != sizeof(header))
-		{
+	// sends an "HI" message type (3)
+	std::string entrada; 
+	std::cin >> entrada;
+	if(entrada != "hi"){
+		emissor_Header.msg_tipo == 2;
+	}
+	else{
+		emissor_Header.msg_tipo = 3;
+		count = send(socket_emissor, &emissor_Header, sizeof(header), 0);	
+		if (count != sizeof(header)) {
 			logexit("send"); // in case of error
 		}
-
-		count = recv(sock, &issuerHeader, sizeof(header), 0);
-		issuerID = issuerHeader.msgDestiny;
-
-		std::cout << "< ok " << issuerID << std::endl;
+		
+		count = recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
+		std::cout << count << " " <<emissor_ID << endl;
+		emissor_Header.msg_tipo = 1;
 	}
 
-	if (issuerHeader.msgType == 1)
-	{
+	if (emissor_Header.msg_tipo == 1)	{
 		// inform to server the origin planet
-		memset(buf, 0, BUFSZ);
-		std::ostringstream msg;
-		msg << "origin " << planetName.length() << " " << planetName.c_str() << std::endl;
-		memcpy(buf, msg.str().c_str(), msg.str().length());
-		std::cout << "> " << msg.str();
+		std::cin.ignore();
+		getline(std::cin, input, '\n');
+		std::vector<std::string> args = split(input, ' ');
+		if(args[0] != "origin"){
+			emissor_Header.msg_tipo == 2;
+			count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
 
-		unsigned short size_planet = strlen(buf);
-		issuerHeader.msgType = 8;
-		issuerHeader.msgDestiny = exhibitorID;
-		issuerHeader.msgOrigin = issuerID;
-		issuerHeader.msgOrder += 1;
-		count = send(sock, &issuerHeader, sizeof(header), 0);
-		count = send(sock, &size_planet, sizeof(size_planet), 0);
-		count = send(sock, buf, size_planet, 0);
-		count = recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+		}
+		else{
+			emissor_Header.msg_tipo = 8;
+			emissor_Header.msg_destino = exibidor_ID;
+			emissor_Header.msg_origem = emissor_ID;
+			emissor_Header.msg_contagem += 1;
+			unsigned short size = atoi(args[1].c_str());
+			count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
 
-		if (issuerHeader.msgType == 1)
-		{
+			count = send(socket_emissor, &size, sizeof(size), 0);		// sends message's size first
+			count = send(socket_emissor, args[2].c_str(), size, 0); // sends message
+
+			count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+			std::cout << count << endl;
+			if (count != sizeof(header)) {
+				logexit("send"); // in case of error
+			}
+			
+			recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
+		}
+
+		if (emissor_Header.msg_tipo == 1)	{
 			std::cout << "< ok" << std::endl;
 		}
 
 		// connection accepted
-		while (1)
-		{
+		while (1)	{
 			std::cout << "> ";
 			getline(std::cin, input, '\n');
 			std::vector<std::string> args = split(input, ' ');
-			issuerHeader = mountHeader(input, issuerID, issuerHeader.msgOrder);
+			emissor_Header = mountHeader(input, emissor_ID, emissor_Header.msg_contagem);
 
-			if (issuerHeader.msgType == 4)
+			if (emissor_Header.msg_tipo == 4)
 			{
-				issuerHeader.msgDestiny = exhibitorID;
-				count = send(sock, &issuerHeader, sizeof(header), 0);
-				close(sock);
+				emissor_Header.msg_destino = exibidor_ID;
+				count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
+				close(socket_emissor);
 				std::cout << "\n connection terminated" << std::endl;
 				exit(EXIT_SUCCESS);
 			}
 			else
 			{
-				if (issuerHeader.msgType != 9)
-					issuerHeader.msgDestiny = atoi(args[1].c_str());
+				if (emissor_Header.msg_tipo != 9)
+					emissor_Header.msg_destino = atoi(args[1].c_str());
 
-				switch (issuerHeader.msgType)
+				switch (emissor_Header.msg_tipo)
 				{
-				case 5: // msg idPlanet numCharsMsg message
-				{
-					int startOfMessage = args[0].length() + args[1].length() + args[2].length() + 3;
-					std::string message = input.substr(startOfMessage);
-					count = send(sock, &issuerHeader, sizeof(header), 0);
-					unsigned short size = atoi(args[2].c_str());
-					count = send(sock, &size, sizeof(size), 0);		// sends message's size first
-					count = send(sock, message.c_str(), size, 0); // sends message
 
-					count = recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
+					case 5: // msg idPlanet numCharsMsg message
+					{
+						int startOfMessage = args[0].length() + args[1].length() + args[2].length() + 3;
+						std::string message = input.substr(startOfMessage);
+						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
+						unsigned short size = atoi(args[2].c_str());
+						count = send(socket_emissor, &size, sizeof(size), 0);		// sends message's size first
+						count = send(socket_emissor, message.c_str(), size, 0); // sends message
 
-					if (issuerHeader.msgType == 1)
-					{
-						std::cout << "< ok" << std::endl;
-					}
-				}
-				break;
-				case 6: // creq idPlanet
-					count = send(sock, &issuerHeader, sizeof(header), 0);
+						count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
 
-					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
-					if (issuerHeader.msgType == 1)
-					{
-						std::cout << "< ok" << std::endl;
+						if (emissor_Header.msg_tipo == 1)
+						{
+							std::cout << "< ok" << std::endl;
+						}
 					}
 					break;
-				case 9: // planet idToFind
-					issuerHeader.msgDestiny = issuerHeader.exhibitorOffIssuer;
-					issuerHeader.ClientToFindPlanetName = atoi(args[1].c_str());  // msgOrigin = client to find the planet name
-					count = send(sock, &issuerHeader, sizeof(header), 0);
-					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
-					if (issuerHeader.msgType == 1)
-					{
-						std::cout << "< ok" << std::endl;
+					case 6: // creq idPlanet
+						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
+
+						recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						if (emissor_Header.msg_tipo == 1)
+						{
+							std::cout << "< ok" << std::endl;
+						}
+						break;
+					case 9: // planet idToFind
+						emissor_Header.msg_destino = emissor_Header.exibidor_do_emissor;
+						emissor_Header.ID_Cliente_Planeta_Pedido = atoi(args[1].c_str());  // msg_origem = client to find the planet name
+						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
+						recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						if (emissor_Header.msg_tipo == 1)
+						{
+							std::cout << "< ok" << std::endl;
+						}
+						break;
+					case 10: // planet Exhibitor
+						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
+						recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						if (emissor_Header.msg_tipo == 1)
+						{
+							std::cout << "< ok" << std::endl;
+						}
+						break;
+					default:
+						std::cout << "invalid option" << std::endl;
+						break;
 					}
-					break;
-				case 10: // planet Exhibitor
-					count = send(sock, &issuerHeader, sizeof(header), 0);
-					recv(sock, &issuerHeader, sizeof(header), 0); // receives an "OK" message
-					if (issuerHeader.msgType == 1)
-					{
-						std::cout << "< ok" << std::endl;
-					}
-					break;
-				default:
-					std::cout << "invalid option" << std::endl;
-					break;
-				}
 			}
 		}
 	}
-	else if (issuerHeader.msgType == 2)
-	{
+	else if (emissor_Header.msg_tipo == 2)	{
 		std::cout << "\n communication failed" << std::endl;
-		close(sock);
+		close(socket_emissor);
 		exit(EXIT_FAILURE);
 	}
-	else
-	{
+	else {
 		std::cout << "\n unknown message type" << std::endl;
-		close(sock);
+		close(socket_emissor);
 		exit(EXIT_FAILURE);
 	}
 }
