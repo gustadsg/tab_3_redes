@@ -166,7 +166,8 @@ int main(int argc, char **argv)
 						memset(buf, 0, BUFSZ);
 						recv(socket_exibidor, &size, sizeof(size), 0);
 						recv(socket_exibidor, buf, size, 0);
-						std::cout <<  buf << std::endl;
+						std::cout << buf << std::endl;
+						send(socket_exibidor, &exibidor_header, sizeof(header), 0);
 						break;
 					}
 					case 10: {
