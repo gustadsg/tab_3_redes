@@ -410,92 +410,37 @@ int main(int argc, char **argv)
 
                                 break;
                             }
-                            // case 9: {
-                            //     std::cout << "received planet from " << server_header.msg_origem << " to " << server_header.ID_Cliente_Planeta_Pedido << ": ";
-                            //     std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.ID_Cliente_Planeta_Pedido << " " << server_header.msg_contagem << std::endl;
-                            //     int clientToFindPlanet = server_header.ID_Cliente_Planeta_Pedido;
-                            //     int clientWhoAskedForPlanetExhibitor = server_header.msg_destino;
-                            //     int aux = 0;
-
-                            //     // find client that matches the id in the exibidores vector
-                            //     for (long unsigned int j = 0; j < exibidores.size(); j++)  {
-                            //         if (exibidores[j].id == clientToFindPlanet)   {
-                            //             // send to the client
-                            //             aux = 1;
-                            //             server_header.msg_tipo = 9;
-                            //             send(exibidores[j].socket, &server_header, sizeof(header), 0);
-
-                            //             // assemble the message
-                            //             memset(buf, 0, BUFSZ);
-                            //             std::ostringstream msg;
-                            //             msg << "planet of " << clientToFindPlanet << ": " << exibidores[j].planet << std::endl;
-                            //             memcpy(buf, msg.str().c_str(), msg.str().size());
-                            //             break;
-                            //         }
-                            //     }
-                            //     if(aux == 0){
-                            //         // find client that matches the id in the emissores vector
-                            //         for (long unsigned int j = 0; j < emissores.size(); j++)  {
-                            //             if (emissores[j].id == clientToFindPlanet)   {
-                            //                 // send to the client
-                            //                 server_header.msg_tipo = 9;
-                            //                 send(emissores[j].socket, &server_header, sizeof(header), 0);
-
-                            //                 // assemble the message
-                            //                 memset(buf, 0, BUFSZ);
-                            //                 std::ostringstream msg;
-                            //                 msg << "planet of " << clientToFindPlanet << ": " << emissores[j].planet << std::endl;
-                            //                 memcpy(buf, msg.str().c_str(), msg.str().size());
-                            //                 break;
-                            //             }
-                            //         }
-                            //     }
-
-                            //     for (long unsigned int j = 0; j < exibidores.size(); j++)  {
-                            //         if (exibidores[j].id == clientWhoAskedForPlanetExhibitor)  {
-                            //             send(exibidores[j].socket, &server_header, sizeof(header), 0);
-                            //             size = strlen(buf);
-                            //             send(exibidores[j].socket, &size, sizeof(size), 0); // sends message's size
-                            //             send(exibidores[j].socket, buf, size, 0); // sends message
-                            //             server_header.msg_tipo = 1; // sends "OK"(1) type message
-                            //             send(i, &server_header, sizeof(header), 0);
-                            //             break;
-                            //         }
-                            //     }
-                            //     break;
-                            // }
-
                            case 9: {
-                            std::cout << "received planet from " << server_header.msg_origem << " to " << server_header.ID_Cliente_Planeta_Pedido << ": ";
-                            std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.ID_Cliente_Planeta_Pedido << " " << server_header.msg_contagem << std::endl;
-                            int clientToFindPlanet = server_header.msg_destino;
-                            int clientWhoAskedForPlanet = server_header.msg_origem;
+                                std::cout << "received planet from " << server_header.msg_origem << " to " << server_header.ID_Cliente_Planeta_Pedido << ": ";
+                                std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.ID_Cliente_Planeta_Pedido << " " << server_header.msg_contagem << std::endl;
+                                int clientToFindPlanet = server_header.msg_destino;
+                                int clientWhoAskedForPlanet = server_header.msg_origem;
 
-                            // find client that matches the id in the exhibitors vector
-                            for (long unsigned int j = 0; j < exibidores.size(); j++) {
-                                if (exibidores[j].id == clientToFindPlanet) {
-                                    // send to the client
-                                    server_header.msg_tipo = 9;
-                                    send(exibidores[j].socket, &server_header, sizeof(header), 0);
+                                // find client that matches the id in the exhibitors vector
+                                for (long unsigned int j = 0; j < exibidores.size(); j++) {
+                                    if (exibidores[j].id == clientToFindPlanet) {
+                                        // send to the client
+                                        server_header.msg_tipo = 9;
+                                        send(exibidores[j].socket, &server_header, sizeof(header), 0);
 
-                                    // assemble the message
-                                    memset(buf, 0, BUFSZ);
-                                    std::ostringstream msg;
-                                    msg << "panet of " << clientToFindPlanet << ": " << exibidores[j].planet << std::endl;
-                                    memcpy(buf, msg.str().c_str(), msg.str().size());
-                                    size = strlen(buf);
+                                        // assemble the message
+                                        memset(buf, 0, BUFSZ);
+                                        std::ostringstream msg;
+                                        msg << "planet of " << clientToFindPlanet << ": " << exibidores[j].planet << std::endl;
+                                        memcpy(buf, msg.str().c_str(), msg.str().size());
+                                        size = strlen(buf);
 
-                                    send(exibidores[j].socket, &size, sizeof(size), 0); // sends message's size
+                                        send(exibidores[j].socket, &size, sizeof(size), 0); // sends message's size
 
-                                    // sends message
-                                    send(exibidores[j].socket, buf, size, 0);
-                                    break;
+                                        // sends message
+                                        send(exibidores[j].socket, buf, size, 0);
+                                        break;
+                                    }
                                 }
+                                server_header.msg_tipo = 1; // sends "OK"(1) type message
+                                send(i, &server_header, sizeof(header), 0);
+                                break;
                             }
-                            server_header.msg_tipo = 1; // sends "OK"(1) type message
-                            send(i, &server_header, sizeof(header), 0);
-                            break;
-                        }
 
 
                             case 10:  {

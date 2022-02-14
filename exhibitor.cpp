@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 						memset(buf, 0, BUFSZ);
 						recv(socket_exibidor, &size, sizeof(size), 0);
 						recv(socket_exibidor, buf, size, 0);
-						std::cout << buf << std::endl;
+						std::cout << "planet of "<< exibidor_header.ID_Cliente_Planeta_Pedido << ": " << buf << endl;
 						send(socket_exibidor, &exibidor_header, sizeof(header), 0);
 						break;
 					}
