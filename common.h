@@ -10,6 +10,8 @@
 
 using namespace std;
 
+extern std::vector<string> allSavedPlanets;
+
 struct header
 {
     // 8 bytes header struct declaration
@@ -49,7 +51,5 @@ unsigned short returnsID(const vector<client> client, char c);
 std::string randomPlanetName();
 
 struct header mountHeader(std::string input, int issuerID, int lastMessageOrder);
-
-std::vector<string> allSavedPlanets;
 
 void SavePlanet(std::string planetName);

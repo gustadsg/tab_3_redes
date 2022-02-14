@@ -10,10 +10,13 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 
 #include "common.h"
 
 #define BUFSZ 500
+
+extern std::vector<string> allSavedPlanets;
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -516,45 +519,7 @@ int main(int argc, char **argv)
                         }
                         case 10:
                         {
-                            // std::vector<string> allSavedPlanets;
-                            // for (long unsigned int j = 0; j < exhibitors.size(); j++)
-                            // {
-                            //     //int allAreDifferent = 1;
-                            //     for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
-                            //     {
-                            //     //     if (allAreDifferent == 0)
-                            //     //         break;
-                            //     //     if (exhibitors[j].planet == allSavedPlanets[k])
-                            //     //     {
-                            //     //         allAreDifferent = 0;
-                            //     //     }
-                            //     // }
-                            //     // if (allAreDifferent == 1)
-                            //     // {
-                            //     //     allSavedPlanets.push_back(exhibitors[j].planet);
-                            //     // }
-                            //         if(exhibitors[j].planet != allSavedPlanets[k])
-                            //             allSavedPlanets[k+1]
-                            // }
-
-                            // for (long unsigned int j = 0; j < issuers.size(); j++)
-                            // {
-                            //     int allAreDifferent = 1;
-                            //     for (long unsigned int k = 0; k < allSavedPlanets.size(); k++)
-                            //     {
-                            //         if (allAreDifferent == 0)
-                            //             break;
-                            //         if (issuers[j].planet == allSavedPlanets[k])
-                            //         {
-                            //             allAreDifferent = 0;
-                            //         }
-                            //     }
-                            //     if (allAreDifferent == 1)
-                            //     {
-                            //         allSavedPlanets.push_back(issuers[j].planet);
-                            //     }
-                            // }
-
+                           
                             std::string allSavedPlanetsString;
                             for (long unsigned int j = 0; j < allSavedPlanets.size(); j++)
                             {

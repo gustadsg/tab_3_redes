@@ -12,7 +12,7 @@
 
 #include <arpa/inet.h>
 #include <pthread.h>
-
+#include <algorithm>
 #define BUFSZ 500
 
 int main(int argc, char **argv)

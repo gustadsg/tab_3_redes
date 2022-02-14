@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 	}
 
 	int sock;
-	std::cout << "creting socket" << std::endl;
+	std::cout << "creating socket" << std::endl;
 	sock = socket(storage.ss_family, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
