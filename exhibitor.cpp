@@ -15,6 +15,22 @@
 #include <algorithm>
 #define BUFSZ 500
 
+std::string GerarPlanetaExibidor(){
+	vector<std::string> planets;
+    planets.push_back("Mercury");
+    planets.push_back("Venus");
+    planets.push_back("Earth");
+    planets.push_back("Mars");
+    planets.push_back("Jupiter");
+    planets.push_back("Saturn");
+    planets.push_back("Urain");
+    planets.push_back("Neptune");
+
+    srand(time(NULL));
+    int random = rand() % planets.size();
+    return planets[random];
+}
+
 int main(int argc, char **argv)
 {
 
@@ -22,7 +38,8 @@ int main(int argc, char **argv)
 	strcpy(string, argv[1]);
 	char *ip;
 	char *porta;
-	std::string planetName = "Netuno"; // gets planet name
+	
+	std::string planetName = GerarPlanetaExibidor(); // gets planet name
 
 	ip = strtok(string, ":");
 	porta = strtok(NULL, ":");
