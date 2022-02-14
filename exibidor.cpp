@@ -23,7 +23,6 @@ int main(int argc, char **argv)
 	char *ip;
 	char *port;
 	std::string planetName = randomPlanetName(); // gets planet name
-	SavePlanet(planetName);
 
 	ip = strtok(string, ":");
 	port = strtok(NULL, ":");

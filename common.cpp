@@ -319,20 +319,3 @@ struct header mountHeader(std::string input, int issuerID, int lastMessageOrder)
     return header;
 }
 
-void SavePlanet(std::string planetName){
-    int newPlanet = 0;
-	// if(allSavedPlanets.size() == NULL){
-	// 	newPlanet = 1; 
-	// }
-	//else {
-		for(unsigned short int k = 0; k < allSavedPlanets.size(); k++){
-			if (planetName == allSavedPlanets[k]){
-				newPlanet = 0;
-				break;
-			}
-		}
-	//}
-	if(newPlanet == 1){
-		allSavedPlanets.push_back(planetName);
-	}
-}

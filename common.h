@@ -10,8 +10,6 @@
 
 using namespace std;
 
-extern std::vector<string> allSavedPlanets;
-
 struct header
 {
     // 8 bytes header struct declaration

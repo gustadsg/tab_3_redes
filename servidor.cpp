@@ -16,8 +16,6 @@
 
 #define BUFSZ 500
 
-extern std::vector<string> allSavedPlanets;
-
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -519,8 +517,45 @@ int main(int argc, char **argv)
                         }
                         case 10:
                         {
-                           
-                            std::string allSavedPlanetsString;
+                            std::string planetName;
+                            std::vector<string> allSavedPlanets;
+                            for(long unsigned int i = 0; i < exhibitors.size(); i++){
+                                planetName = exhibitors[i].planet;
+                                int newPlanet = 0;
+                                if(allSavedPlanets.size() == NULL){
+                                    newPlanet = 1; 
+                                }
+                                else {
+                                    for(unsigned short int k = 0; k < allSavedPlanets.size(); k++){
+                                        if (planetName == allSavedPlanets[k]){
+                                            newPlanet = 0;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(newPlanet == 1){
+                                    allSavedPlanets.push_back(planetName);
+                                }
+                            }
+                            for(long unsigned int i = 0; i < issuers.size(); i++){
+                                planetName = issuers[i].planet;
+                                int newPlanet = 0;
+                                if(allSavedPlanets.size() == NULL){
+                                    newPlanet = 1; 
+                                }
+                                else {
+                                    for(unsigned short int k = 0; k < allSavedPlanets.size(); k++){
+                                        if (planetName == allSavedPlanets[k]){
+                                            newPlanet = 0;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(newPlanet == 1){
+                                    allSavedPlanets.push_back(planetName);
+                                }
+                            }
+                            std::string allSavedPlanetsString; 
                             for (long unsigned int j = 0; j < allSavedPlanets.size(); j++)
                             {
                                 allSavedPlanetsString += allSavedPlanets[j];
