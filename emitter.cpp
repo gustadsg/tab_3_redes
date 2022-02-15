@@ -9,7 +9,6 @@
 #include "common.h"
 #include "istream"
 
-// socket libraries:
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -43,9 +42,8 @@ int main(int argc, char **argv)
 {
 	char str[14];
 	strcpy(str, argv[1]);
-	char *ip = strtok(str, ":");								 // gets IP
-	char *port = strtok(NULL, ":");							 // gets port
-	//std::string Nome_Planeta = Gera_Nome_Planeta(); // gets planet name
+	char *ip = strtok(str, ":");								
+	char *port = strtok(NULL, ":");							
 
 	std::string input;
 
@@ -57,7 +55,6 @@ int main(int argc, char **argv)
 
 	unsigned short exibidor_ID = atoi(argv[2]);
 
-	// socket parse:
 	struct sockaddr_storage storage;
 
 	if (0 != addrparse(ip, port, &storage))
@@ -82,9 +79,8 @@ int main(int argc, char **argv)
 	char addrstr[BUFSZ];
 	addrtostr(addr, addrstr, BUFSZ);
 
-	std::cout << "connected to " << addrstr << std::endl; // connection success
+	std::cout << "connected to " << addrstr << std::endl; 
 
-	// communication variables:
 	size_t count;
 	struct header emissor_Header;
 	unsigned short emissor_ID = 1;
@@ -94,7 +90,6 @@ int main(int argc, char **argv)
 	emissor_Header.msg_destino = exibidor_ID;
 	emissor_Header.exibidor_do_emissor = exibidor_ID;
 
-	// sends an "HI" message type (3)
 	std::string entrada; 
 	std::cin >> entrada;
 	if(entrada != "hi"){
@@ -104,16 +99,15 @@ int main(int argc, char **argv)
 		emissor_Header.msg_tipo = 3;
 		count = send(socket_emissor, &emissor_Header, sizeof(header), 0);	
 		if (count != sizeof(header)) {
-			logexit("send"); // in case of error
+			logexit("send"); 
 		}
 		
-		count = recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
+		count = recv(socket_emissor, &emissor_Header, sizeof(header), 0);	
 		std::cout << "< ok " << emissor_ID <<std::endl;
 		emissor_Header.msg_tipo = 1;
 	}
 	std::cout << "> ";
 	if (emissor_Header.msg_tipo == 1)	{
-		// inform to server the origin planet
 		std::cin.ignore();
 		getline(std::cin, input, '\n');
 		std::vector<std::string> args = split(input, ' ');
@@ -130,23 +124,16 @@ int main(int argc, char **argv)
 			unsigned short size = atoi(args[1].c_str());
 			count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
 
-			count = send(socket_emissor, &size, sizeof(size), 0);		// sends message's size first
-			count = send(socket_emissor, args[2].c_str(), size, 0); // sends message
-
-			// count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
-			// std::cout << count << endl;
-			// if (count != sizeof(header)) {
-			// 	logexit("send"); // in case of error
-			// }
+			count = send(socket_emissor, &size, sizeof(size), 0);		
+			count = send(socket_emissor, args[2].c_str(), size, 0); 
 			
-			recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
+			recv(socket_emissor, &emissor_Header, sizeof(header), 0);	
 		}
 
 		if (emissor_Header.msg_tipo == 1)	{
 			std::cout << "< ok" << std::endl;
 		}
 
-		// connection accepted
 		while (1)	{
 			std::cout << "> ";
 			getline(std::cin, input, '\n');
@@ -170,18 +157,18 @@ int main(int argc, char **argv)
 				{
 					case 1:
 
-					recv(socket_emissor, &emissor_Header, sizeof(header), 0);	// receiving ok for hi message
+					recv(socket_emissor, &emissor_Header, sizeof(header), 0);	
 
-					case 5: // msg idPlanet numCharsMsg message
+					case 5: 
 					{
 						int startOfMessage = args[0].length() + args[1].length() + args[2].length() + 3;
 						std::string message = input.substr(startOfMessage);
 						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
 						unsigned short size = atoi(args[2].c_str());
-						count = send(socket_emissor, &size, sizeof(size), 0);		// sends message's size first
-						count = send(socket_emissor, message.c_str(), size, 0); // sends message
+						count = send(socket_emissor, &size, sizeof(size), 0);		
+						count = send(socket_emissor, message.c_str(), size, 0); 
 
-						count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						count = recv(socket_emissor, &emissor_Header, sizeof(header), 0); 
 
 						if (emissor_Header.msg_tipo == 1)
 						{
@@ -189,28 +176,28 @@ int main(int argc, char **argv)
 						}
 					}
 					break;
-					case 6: // creq idPlanet
+					case 6:
 						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
 
-						recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						recv(socket_emissor, &emissor_Header, sizeof(header), 0); 
 						if (emissor_Header.msg_tipo == 1)
 						{
 							std::cout << "< ok" << std::endl;
 						}
 						break;
-					case 9: // planet idToFind
+					case 9: 
 						emissor_Header.msg_destino = emissor_Header.exibidor_do_emissor;
-						emissor_Header.ID_Cliente_Planeta_Pedido = atoi(args[1].c_str());  // msg_origem = client to find the planet name
+						emissor_Header.ID_Cliente_Planeta_Pedido = atoi(args[1].c_str());  
 						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
-						recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						recv(socket_emissor, &emissor_Header, sizeof(header), 0); 
 						if (emissor_Header.msg_tipo == 1)
 						{
 							std::cout << "< ok" << std::endl;
 						}
 						break;
-					case 10: // planet Exhibitor
+					case 10: 
 						count = send(socket_emissor, &emissor_Header, sizeof(header), 0);
-						recv(socket_emissor, &emissor_Header, sizeof(header), 0); // receives an "OK" message
+						recv(socket_emissor, &emissor_Header, sizeof(header), 0);
 						if (emissor_Header.msg_tipo == 1)
 						{
 							std::cout << "< ok" << std::endl;

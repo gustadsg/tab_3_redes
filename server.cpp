@@ -16,7 +16,6 @@
 
 #define BUFSZ 500
 
-// get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET)
@@ -30,15 +29,15 @@ void *get_in_addr(struct sockaddr *sa)
 int main(int argc, char **argv)
 {
 
-    const char *PORT = argv[1]; // gets  PORT
+    const char *PORT = argv[1]; 
 
-    fd_set master;   // master file descriptor list
-    fd_set read_fds; // temp file descriptor list for select()
-    int fdmax;       // maximum file descriptor number
+    fd_set master;   
+    fd_set read_fds; 
+    int fdmax;       
 
-    int listener;                       // listening socket descriptor
-    int newfd;                          // newly accept()ed socket descriptor
-    struct sockaddr_storage remoteaddr; // client address
+    int listener;                       
+    int newfd;                          
+    struct sockaddr_storage remoteaddr; 
     socklen_t addrlen;
 
     char buf[BUFSZ];
@@ -46,20 +45,19 @@ int main(int argc, char **argv)
 
     int nbytes;
 
-    std::vector<client> exibidores; // exhibtiors vector
-    std::vector<client> emissores;    // emissores vector
+    std::vector<client> exibidores; 
+    std::vector<client> emissores;    
 
     char remoteIP[INET6_ADDRSTRLEN];
 
-    int yes = 1; // for setsockopt() SO_REUSEADDR, below
+    int yes = 1; 
     int i, j, rv;
 
     struct addrinfo hints, *ai, *p;
 
-    FD_ZERO(&master); // clear the master and temp sets
+    FD_ZERO(&master); 
     FD_ZERO(&read_fds);
 
-    // get us a socket and bind it
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -78,7 +76,6 @@ int main(int argc, char **argv)
             continue;
         }
 
-        // lose the pesky "address already in use" error message
         setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
         if (bind(listener, p->ai_addr, p->ai_addrlen) < 0)
         {
@@ -90,42 +87,35 @@ int main(int argc, char **argv)
         break;
     }
 
-    // if we got here, it means we didn't get bound
     if (p == NULL)
     {
         fprintf(stderr, "selectserver: failed to bind\n");
         exit(2);
     }
 
-    freeaddrinfo(ai); // all done with this
+    freeaddrinfo(ai); 
 
-    // listen
     if (listen(listener, 10) == -1)
     {
         perror("listen");
         exit(3);
     }
 
-    // add the listener to the master set
     FD_SET(listener, &master);
 
-    // keep track of the biggest file descriptor
-    fdmax = listener; // so far, it's this one
+    fdmax = listener; 
 
-    // main loop
     for (;;)  {
-        read_fds = master; // copy it
+        read_fds = master; 
         if (select(fdmax + 1, &read_fds, NULL, NULL, NULL) == -1)  {
             perror("select");
             exit(4);
         }
 
-        // run through the existing connections looking for data to read
         for (i = 0; i <= fdmax; i++)  {
             struct header server_header;
-            if (FD_ISSET(i, &read_fds))  { // we got one!!
+            if (FD_ISSET(i, &read_fds))  { 
                 if (i == listener) {
-                    // handle new connections
                     addrlen = sizeof remoteaddr;
                     newfd = accept(listener,
                                    (struct sockaddr *)&remoteaddr,
@@ -135,8 +125,8 @@ int main(int argc, char **argv)
                         perror("accept");
                     }
                     else  {
-                        FD_SET(newfd, &master);               // add to master set
-                        if (newfd > fdmax)  {               // keep track of the max
+                        FD_SET(newfd, &master);               
+                        if (newfd > fdmax)  {               
                             fdmax = newfd;
                         }
                         printf("selectserver: new connection from %s on "
@@ -148,12 +138,9 @@ int main(int argc, char **argv)
                     }
                 }
                 else  {
-                    // handle data from a client
                     if ((nbytes = recv(i, &server_header, sizeof(header), 0)) <= 0)  {
-                        // got error or connection closed by client
                         if (nbytes == 0)
                         {
-                            // connection closed
                             printf("selectserver: socket %d hung up\n", i);
                         }
                         else
@@ -161,18 +148,17 @@ int main(int argc, char **argv)
                             perror("recv");
                         }
                         close(i);
-                        FD_CLR(i, &master); // remove from master set
+                        FD_CLR(i, &master); 
                     }
                     else
                     {
-                        // we got some data from a client
                         if (server_header.msg_tipo != (9 && 8 && 3 && 5)){
                             std::cout << "received from " << server_header.msg_origem << ": ";
                             std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
                         }
                         switch (server_header.msg_tipo) {
 
-                            case 1:    {                                               //"OK" message, from exibidor to emissor
+                            case 1:    {                                               
                                 for (long unsigned int s = 0; s < emissores.size(); s++) {
                                     if (emissores[s].id == server_header.msg_destino)  {
                                         send(emissores[s].socket, &server_header, sizeof(header), 0);
@@ -187,7 +173,6 @@ int main(int argc, char **argv)
                                     server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
 
                                 if (server_header.msg_origem == 0)   {
-                                    // recognizes client: exibidor
                                     struct client exibidor;
                                     exibidor.socket = i;
                                     exibidores.push_back(exibidor);
@@ -201,13 +186,11 @@ int main(int argc, char **argv)
                                     send(i, &server_header, sizeof(header), 0);
                                 }
                                 else if (server_header.msg_origem > 0)  {
-                                    // recognize client: emissor
                                     struct client emissor;
                                     emissor.socket = i;
                                     emissores.push_back(emissor);
                                     emissor.id = returnsID(emissores, 'i');
 
-                                    // checks given exibidores id:
                                     int aux01 = -1;
 
                                     for (long unsigned int t = 0; t < exibidores.size(); t++)   {
@@ -219,13 +202,11 @@ int main(int argc, char **argv)
                                     }
 
                                     if (aux01 >= 0)  {
-                                        // reconhece o exibidor_ID associado
                                         server_header.msg_tipo = 1;
                                         server_header.msg_destino = emissor.id;
                                         server_header.msg_origem = 65535;
                                     }
                                     else  {
-                                        // wrong exibidor's id was sent
                                         server_header.msg_tipo = 2;
                                         server_header.msg_destino = server_header.msg_origem;
                                         server_header.msg_origem = 65535;
@@ -233,26 +214,22 @@ int main(int argc, char **argv)
                                     send(i, &server_header, sizeof(header), 0);
                                 }
                                 else  {
-                                    // não conseguiu reconhecer o client
                                     server_header.msg_tipo = 2;
                                     server_header.msg_destino = server_header.msg_origem;
                                     server_header.msg_origem = 65535;
                                     send(i, &server_header, sizeof(header), 0);
-                                    close(i); // finaliza a conexão
+                                    close(i); 
                                 }
 
                                 break;
                             case 4:   {
                                 std::cout << "Received kill from " << server_header.msg_origem << endl;
-                                // erases exibidor's position and closes socket
                                 for (long unsigned int s = 0; s < exibidores.size(); s++)  {
                                     if (exibidores[s].id == server_header.msg_destino)   {
                                         close(exibidores[s].socket);
                                         exibidores.erase(exibidores.begin() + (s - 1));
                                     }
                                 }
-
-                                // erases emissor's vector position
                                 for (long unsigned int s = 0; s < emissores.size(); s++)  {
                                     if (emissores[s].id == server_header.msg_origem)   {
                                         close(emissores[s].socket);
@@ -265,21 +242,19 @@ int main(int argc, char **argv)
                                 memset(buf, 0, BUFSZ);
                                 size = 0;
 
-                                nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
-                                nbytes = recv(i, buf, size, 0);           // receives message
+                                nbytes = recv(i, &size, sizeof(size), 0); 
+                                nbytes = recv(i, buf, size, 0);           
                                 std::cout << "sent message from " << server_header.msg_origem << " to " << server_header.msg_destino << ": ";
                                 std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
                                 int aux = 0;
                                 if (server_header.msg_destino == 0)  {
                                     for (j = 0; j <= fdmax; j++)  {
-                                        // send to everyone!
                                         if (FD_ISSET(j, &master))  {
-                                            // except the listener and ourselves
                                             if (j != listener && j != i)  {
                                                 send(j, &server_header, sizeof(header), 0);
                                                 size = strlen(buf);
-                                                send(j, &size, sizeof(size), 0); // sends message's size
-                                                send(j, buf, size, 0);           // sends message
+                                                send(j, &size, sizeof(size), 0); 
+                                                send(j, buf, size, 0);           
 
                                                 if (send(j, &server_header, sizeof(header), 0) == -1)  {
                                                     perror("send");
@@ -295,8 +270,8 @@ int main(int argc, char **argv)
                                         if (exibidores[s].id == server_header.msg_destino)   {
                                             send(exibidores[s].socket, &server_header, sizeof(header), 0);
                                             size = strlen(buf);
-                                            send(exibidores[s].socket, &size, sizeof(size), 0); // sends message's size
-                                            send(exibidores[s].socket, buf, size, 0);           // sends message
+                                            send(exibidores[s].socket, &size, sizeof(size), 0); 
+                                            send(exibidores[s].socket, buf, size, 0);          
                                             aux++;
 
                                             if (send(exibidores[s].socket, &server_header, sizeof(header), 0) == -1)  {
@@ -305,19 +280,19 @@ int main(int argc, char **argv)
                                             break;
                                         }
                                     }
-                                if (aux == 0) {// could not find specified exibidor  {
-                                    server_header.msg_tipo = 2; // sendes "ERROR"(2) type message
+                                if (aux == 0) {
+                                    server_header.msg_tipo = 2; 
                                     server_header.msg_destino = server_header.msg_origem;
                                     server_header.msg_origem = 65535;
                                     send(i, &server_header, sizeof(header), 0);
                                 }
                                 }
-                                server_header.msg_tipo = 1; // sends "OK"(1) type message
+                                server_header.msg_tipo = 1; 
                                 send(i, &server_header, sizeof(header), 0);
                                 break;
                             }
                             case 6: {
-                                server_header.msg_tipo = 7; // sends CLIST
+                                server_header.msg_tipo = 7; 
                                 unsigned short N = emissores.size() + exibidores.size();
                                 unsigned short clist[N];
                                 for (long unsigned int s = 0; s < N; s++)  {
@@ -331,9 +306,7 @@ int main(int argc, char **argv)
 
                                 if (server_header.msg_destino == 0)  {
                                     for (j = 0; j <= fdmax; j++)  {
-                                        // send to everyone!
                                         if (FD_ISSET(j, &master))  {
-                                            // except the listener and ourselves
                                             if (j != listener && j != i)  {
                                                 send(j, &server_header, sizeof(header), 0);
                                                 send(j, &N, sizeof(N), 0);
@@ -361,8 +334,8 @@ int main(int argc, char **argv)
                                         }
                                     }
 
-                                    if (aux == 0)  {// could not find specified exibidor   
-                                        server_header.msg_tipo = 2; // sendes "ERROR"(2) type message
+                                    if (aux == 0)  { 
+                                        server_header.msg_tipo = 2; 
                                         server_header.msg_destino = server_header.msg_origem;
                                         server_header.msg_origem = 65535;
                                         send(i, &server_header, sizeof(header), 0);
@@ -372,16 +345,15 @@ int main(int argc, char **argv)
                             }
                             case 8:   {
                                 memset(buf, 0, BUFSZ);
-                                nbytes = recv(i, &size, sizeof(size), 0); // receives the message size first
-                                nbytes = recv(i, buf, size, 0);           // receives message
+                                nbytes = recv(i, &size, sizeof(size), 0); 
+                                nbytes = recv(i, buf, size, 0);           
 
                                 for (long unsigned int j = 0; j < exibidores.size(); j++)  {
                                     if (exibidores[j].id == server_header.msg_origem) {
-                                        // save info in exibidores vector
+                                       
                                         strtok(buf, " ");
                                         strtok(NULL, " ");
                                         char *NomeDoPlaneta = strtok(NULL, " ");
-                                        std::cout << NomeDoPlaneta;
                                         std::cout << "received "<< NomeDoPlaneta << "from " << exibidores[j].id << ": ";
                                         std::cout << server_header.msg_tipo << " " << server_header.msg_origem << " " << 
                                             server_header.msg_destino << " " << server_header.msg_contagem << std::endl;
@@ -391,7 +363,6 @@ int main(int argc, char **argv)
 
                                 for (long unsigned int j = 0; j < emissores.size(); j++)  {
                                     if (emissores[j].id == server_header.msg_origem)  {
-                                        // save info in emissores vector
                                         strtok(buf, " ");
                                         strtok(NULL, " ");
                                         char *NomeDoPlaneta = strtok(NULL, " ");
@@ -403,10 +374,10 @@ int main(int argc, char **argv)
                                     }
                                 }
 
-                                server_header.msg_tipo = 1;                       // sends "OK"(1) type message
-                                server_header.msg_destino = server_header.msg_origem; // back to the origin client
-                                server_header.msg_origem = 65535;                 // from server
-                                send(i, &server_header, sizeof(header), 0);      // sends message
+                                server_header.msg_tipo = 1;                       
+                                server_header.msg_destino = server_header.msg_origem; 
+                                server_header.msg_origem = 65535;                 
+                                send(i, &server_header, sizeof(header), 0);     
 
                                 break;
                             }
@@ -416,28 +387,24 @@ int main(int argc, char **argv)
                                 int clientToFindPlanet = server_header.msg_destino;
                                 int clientWhoAskedForPlanet = server_header.msg_origem;
 
-                                // find client that matches the id in the exhibitors vector
                                 for (long unsigned int j = 0; j < exibidores.size(); j++) {
                                     if (exibidores[j].id == clientToFindPlanet) {
-                                        // send to the client
                                         server_header.msg_tipo = 9;
                                         send(exibidores[j].socket, &server_header, sizeof(header), 0);
 
-                                        // assemble the message
                                         memset(buf, 0, BUFSZ);
                                         std::ostringstream msg;
                                         msg << "planet of " << clientToFindPlanet << ": " << exibidores[j].planet << std::endl;
                                         memcpy(buf, msg.str().c_str(), msg.str().size());
                                         size = strlen(buf);
 
-                                        send(exibidores[j].socket, &size, sizeof(size), 0); // sends message's size
+                                        send(exibidores[j].socket, &size, sizeof(size), 0); 
 
-                                        // sends message
                                         send(exibidores[j].socket, buf, size, 0);
                                         break;
                                     }
                                 }
-                                server_header.msg_tipo = 1; // sends "OK"(1) type message
+                                server_header.msg_tipo = 1; 
                                 send(i, &server_header, sizeof(header), 0);
                                 break;
                             }
@@ -488,12 +455,9 @@ int main(int argc, char **argv)
                                     allSavedPlanetsString += allSavedPlanets[j];
                                 }
 
-                                std::cout << allSavedPlanetsString << std::endl;
-
-                                server_header.msg_tipo = 1; // sends "OK"(1) type message
+                                server_header.msg_tipo = 1; 
                                 send(i, &server_header, sizeof(header), 0);
 
-                                // send to the exhibtor
                                 server_header.msg_tipo = 5;
                                 send(i, &server_header, sizeof(header), 0);
 
@@ -501,9 +465,8 @@ int main(int argc, char **argv)
                                 memcpy(buf, allSavedPlanetsString.c_str(), allSavedPlanetsString.size());
                                 size = strlen(buf);
 
-                                send(i, &size, sizeof(size), 0); // sends message's size
+                                send(i, &size, sizeof(size), 0); 
 
-                                // sends message
                                 send(i, buf, size, 0);
 
                                 break;
@@ -516,9 +479,9 @@ int main(int argc, char **argv)
                             }
                         }
                     }
-                } // END handle data from client
-            }     // END got new incoming connection
-        }         // END looping through file descriptors
-    }             // END for(;;)
+                } 
+            }     
+        }         
+    }             
     return 0;
 }

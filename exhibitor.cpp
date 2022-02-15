@@ -6,7 +6,6 @@
 #include <sstream>
 #include "common.h"
 
-// socket libraries:
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -39,7 +38,7 @@ int main(int argc, char **argv)
 	char *ip;
 	char *porta;
 	
-	std::string planetName = GerarPlanetaExibidor(); // gets planet name
+	std::string planetName = GerarPlanetaExibidor(); 
 
 	ip = strtok(string, ":");
 	porta = strtok(NULL, ":");
@@ -76,16 +75,14 @@ int main(int argc, char **argv)
 	unsigned short exibidor_ID = 0;
 
 	exibidor_header.msg_contagem = 0;
-	exibidor_header.msg_destino = 65535; // server'socket_exibidor ID
+	exibidor_header.msg_destino = 65535; 
 	exibidor_header.msg_origem = exibidor_ID;
 
 	if (exibidor_header.msg_contagem == 0)
 	{
-		// sends an "HI" message type (3)
 		std::cout << "> hi" << std::endl;
 		exibidor_header.msg_tipo = 3; 
 		send(socket_exibidor, &exibidor_header, sizeof(header), 0);
-		// receiving ok for hi message
 		recv(socket_exibidor, &exibidor_header, sizeof(header), 0);
 
 		exibidor_ID = exibidor_header.msg_destino;
@@ -96,7 +93,6 @@ int main(int argc, char **argv)
 	if (exibidor_header.msg_tipo == 1)
 	{
 
-		// inform to server the origin planet
 		memset(buf, 0, BUFSZ);
 		std::ostringstream msg;
 
@@ -114,7 +110,7 @@ int main(int argc, char **argv)
 		send(socket_exibidor, &exibidor_header, sizeof(header), 0);
 		send(socket_exibidor, &size_planet, sizeof(size_planet), 0);
 		send(socket_exibidor, buf, size_planet, 0);
-		recv(socket_exibidor, &exibidor_header, sizeof(header), 0); // receives an "OK" message
+		recv(socket_exibidor, &exibidor_header, sizeof(header), 0); 
 
 		if (exibidor_header.msg_tipo == 1)
 		{
@@ -133,7 +129,7 @@ int main(int argc, char **argv)
 				switch (exibidor_header.msg_tipo) {
 					case 1:
 
-					recv(socket_exibidor, &exibidor_header, sizeof(header), 0);	// receiving ok for hi message
+					recv(socket_exibidor, &exibidor_header, sizeof(header), 0);
 
 					case 4:
 						close(socket_exibidor);
@@ -146,9 +142,7 @@ int main(int argc, char **argv)
 						memset(buf, 0, BUFSZ);
 
 						recv(socket_exibidor, &size, sizeof(size), 0);
-						std::cout << size << endl;
 						recv(socket_exibidor, buf, size, 0);
-						std::cout << buf << endl;
 
 						std::cout << "< message from " << exibidor_header.msg_origem << ": " << buf << std::endl;
 
@@ -193,8 +187,6 @@ int main(int argc, char **argv)
 
 						recv(socket_exibidor, &size, sizeof(size), 0);
 						recv(socket_exibidor, buf, size, 0);
-
-						std::cout << buf << std::endl;
 
 						exibidor_header.msg_tipo = 1; // "OK" message
 						exibidor_header.msg_destino = exibidor_header.msg_origem;

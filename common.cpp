@@ -18,18 +18,14 @@ void logexit(const char *msg){
 int addrparse(const char *addrstr, const char *portstr,
               struct sockaddr_storage *storage) {
     if (addrstr == NULL || portstr == NULL) {
-        // returns error case port is not found
     }
-    // parse:
-    uint16_t port = (uint16_t)atoi(portstr); // unsigned short
-    // atoi = string to integer
+    uint16_t port = (uint16_t)atoi(portstr); 
     if (port == 0) {
         return -1;
-        // wrong information transmisted (there is no port 0)
     }
-    port = htons(port); // host to network short
+    port = htons(port); 
 
-    struct in_addr inaddr4; // 32-bit IP address
+    struct in_addr inaddr4; 
     if (inet_pton(AF_INET, addrstr, &inaddr4)) {
         struct sockaddr_in *addr4 = (struct sockaddr_in *)storage;
         addr4->sin_family = AF_INET;
@@ -38,7 +34,7 @@ int addrparse(const char *addrstr, const char *portstr,
         return 0;
     }
 
-    struct in6_addr inaddr6; // 128-bit IPv6 address
+    struct in6_addr inaddr6; 
     if (inet_pton(AF_INET6, addrstr, &inaddr6)) {
         struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)storage;
         addr6->sin6_family = AF_INET6;
@@ -62,7 +58,7 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize) {
                        INET6_ADDRSTRLEN + 1)) {
             logexit("ntop");
         }
-        port = ntohs(addr4->sin_port); // network to host short
+        port = ntohs(addr4->sin_port); 
     }
     else if (addr->sa_family == AF_INET6)  {
         version = 6;
@@ -71,7 +67,7 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize) {
                        INET6_ADDRSTRLEN + 1)) {
             logexit("ntop");
         }
-        port = ntohs(addr6->sin6_port); // network to host short
+        port = ntohs(addr6->sin6_port); 
     }
     else  {
         logexit("unknown protocol family.");
@@ -83,11 +79,11 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize) {
 
 int server_sockaddr_init(const char *proto, const char *portstr,
                          struct sockaddr_storage *storage) {
-    uint16_t port = (uint16_t)atoi(portstr); // unsigned short
+    uint16_t port = (uint16_t)atoi(portstr); 
     if (port == 0) {
         return -1;
     }
-    port = htons(port); // host to network short
+    port = htons(port); 
 
     memset(storage, 0, sizeof(*storage));
     if (0 == strcmp(proto, "v4")) {
@@ -110,7 +106,7 @@ int server_sockaddr_init(const char *proto, const char *portstr,
 }
 
 
-int checksExib(vector<client> &clients, unsigned short id) {
+int testa_exibidores(vector<client> &clients, unsigned short id) {
     int aux = -1;
     for (long unsigned int s; s < clients.size(); s++) {
         if (clients[s].id == id) {
@@ -118,20 +114,19 @@ int checksExib(vector<client> &clients, unsigned short id) {
         }
     }
     return aux;
-    // return 0 case id param is unused
 }
 
 unsigned short returnsID(const vector<client> client, char c) {
     if (client.size() == 1) {
         switch (c) {
         case 'e':
-            return 4096; // first exhibitor's id
+            return 4096; 
             break;
         case 'i':
-            return 1; // first issuer's id
+            return 1; 
             break;
         default:
-            return -1; // unrecognized type
+            return -1;
             break;
         }
     }

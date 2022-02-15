@@ -36,12 +36,9 @@ void addrtostr(const struct sockaddr *addr, char *str, size_t strsize);
 int server_sockaddr_init(const char *proto, const char *portstr,
                          struct sockaddr_storage *storage);
 
-unsigned short getsType();
 
-int checksExib(vector<client> &clients, unsigned short id);
+int testa_exibidores(vector<client> &clients, unsigned short id);
 
 unsigned short returnsID(const vector<client> client, char c);
 
 struct header mountHeader(std::string input, int issuerID, int lastMessageOrder);
-
-void SavePlanet(std::string planetName);
